@@ -1,0 +1,453 @@
+div.__annotation {
+  float:left;
+  margin:0;
+  overflow:hidden;
+  padding:0;
+  position:relative;
+}
+
+div.__annotation div.__elementWrap {
+  left:0;
+  position:absolute;
+  top:0;
+}
+
+div.__annotation div.__canvas {
+  border:1px solid #999;
+}
+
+input.__input,
+button.__input,
+div.__input {
+  float:left;
+  -moz-user-select:none;
+  -webkit-user-select:none;
+}
+
+button.__button {
+  height:18px;
+  margin:0;
+}
+
+input.__checkbox {
+  height:12px;
+  margin:4px 4px 0 0;
+}
+
+div.__checkboxText {
+  float:left;
+  font-family:arial, sans-serif;
+  font-size:12px;
+  height:12px;
+  line-height:12px;
+  margin:0;
+  padding:3px 0;
+}
+
+div.__divButton {
+  border:1px solid #000;
+  cursor:pointer;
+  height:16px;
+  width:32px;
+}
+
+div.__divButtonText {
+  float:left;
+  font-family:arial, sans-serif;
+  font-size:11px;
+  height:18px;
+  line-height:18px;
+  margin:0 4px;
+  padding:0;
+}
+
+div.__elementLabel {
+	clear:both;
+	float:left;
+	font-size:16px;
+	font-weight:bold;
+	height:20px;
+	line-height:20px;
+	margin:0;
+	padding:0;
+	position:relative;
+	text-align:center;
+	width:100%;
+}
+
+div.__elementWrap {
+	background:none;
+	float:left;
+	margin:0;
+	overflow:hidden;
+	padding:0;
+	position:relative;
+  -moz-user-select:none;
+  -webkit-user-select:none;
+}
+
+div.__image {
+	background:#ccc;
+	border:1px solid #999;
+	float:left;
+	margin:0 0 5px 0;
+	overflow:hidden;
+	padding:0;
+	position:relative;
+	-moz-user-select:none;
+	-webkit-user-select:none;
+}
+
+div.__image img {
+	left:0;
+	margin:0;
+	padding:0;
+	position:relative;
+	top:0;
+}
+
+div.__inputKeyLabel {
+  clear:both;
+  color:#000fff;
+  float:left;
+  font-family:arial, sans-serif;
+  font-size:11px;
+  height:11px;
+  line-height:11px;
+  margin:0;
+  padding:2px 0;
+  text-align:center;
+}
+
+ul.__inputSet {
+  display:table-row;
+  float:left;
+  list-style:none;
+  margin:0 0 5px 0;
+  padding:0;
+  white-space:nowrap;
+  width:100%;
+}
+
+ul.__inputSet li {
+  display:table-cell;
+  padding:0 1px;
+}
+
+ul.__inputSet li.__inputSpacer {
+  padding:8px;
+}
+
+div.__inputSetInnerWrap {
+  margin:0 auto;
+  overflow:hidden;
+}
+
+div.__inputSetOuterWrap {
+  overflow:hidden;
+  width:100%;
+}
+
+div.__inputSetVerticalWrap {
+  overflow:hidden;
+}
+
+div.__inputSetVerticalWrap ul.__inputSet {
+  display:block;
+  width:auto;
+}
+
+div.__inputSetVerticalWrap ul.__inputSet li {
+  clear:both;
+  display:block;
+  float:right;
+  height:35px;
+}
+
+div.__inputSetVerticalWrap div.__inputWrap {
+  float:left;
+  height:40px;
+}
+
+div.__inputWrap {
+  margin:0 4px 0 0;
+  overflow:hidden;
+  position:relative;
+}
+
+canvas.__map {
+  background:#ccc;
+}
+
+div.__mapButtons {
+  clear:both;
+  float:left;
+  overflow:hidden;
+}
+
+div.__mapOuterWrap {
+  float:left;
+  position:relative;
+}
+
+div.__mapWrap {
+  clear:both;
+  float:left;
+  margin:0 0 8px 0;
+  position:relative;
+	-moz-user-select:none;
+	-webkit-user-select:none;
+}
+
+div.__mapWrap div.__element {
+  border:none;
+  margin:0;
+}
+
+div.__mapWrap div.__elementWrap {
+  border:1px solid #999;
+  float:none;
+  left:5px;
+  position:absolute;
+  top:0;
+}
+
+div.__mapWrap div.__inputWrap {
+  float:none;
+  position:absolute;
+  right:0;
+  top:0;
+}
+
+div.__markerButtons {
+  float:left;
+  overflow:hidden;
+  position:relative;
+}
+
+div.__markerDetails {
+  float:left;
+  height:18px;
+  overflow:hidden;
+  margin:0 0 0 4px;
+  padding:0;
+  position:relative;
+}
+
+div.__markerDetails p {
+  display:table-cell;
+  font-family:arial, sans-serif;
+  font-size:11px;
+  height:17px;
+  margin:0;
+  padding:0;
+  vertical-align:middle;
+}
+
+div.__markerName {
+  float:left;
+  font-family:arial, sans-serif;
+  font-size:13px;
+  font-weight:bold;
+  height:18px;
+  line-height:18px;
+  overflow:hidden;
+  position:relative;
+}
+
+div.__markerReferenceWrap {
+  float:left;
+  overflow:hidden;
+  position:relative;
+}
+
+div.__markerReference {
+  border:1px solid #000;
+  float:left;
+  height:15px;
+  margin:0 5px 0 0;
+  overflow:hidden;
+  position:relative;
+  width:32px;
+}
+
+div.__radio {
+  
+}
+
+div.__radioText {
+  float:left;
+  font-family:arial, sans-serif;
+  font-size:14px;
+  height:18px;
+  line-height:18px;
+  margin:0;
+  padding:0;
+}
+
+input.__slider {
+  float:left;
+  margin:0;
+  position:relative;
+}
+
+div.__sliderKeyLabel {
+  clear:none;
+}
+
+div.__sliderKeyLabel:first-of-type {
+  float:left;
+  padding-left:5px;
+}
+
+div.__sliderKeyLabel:last-of-type {
+  float:right;
+}
+
+div.__timecode {
+  float:right;
+  font-family:arial, sans-serif;
+  font-size:14px;
+  font-weight:bold;
+  height:18px;
+  line-height:16px;
+  margin:0 2px 0 0;
+  overflow:hidden;
+  position:relative;
+}
+
+div.__timelineWrap {
+  clear:both;
+  float:left;
+  margin:5px 0 0 0;
+  overflow:hidden;
+  position:relative;
+}
+
+div.__timelineWrap div.__elementWrap {
+  clear:both;
+  margin:0 0 1px 0;
+}
+
+div.__timelineWrap div.__element {
+  background:#ddd;
+  border-color:#999;
+  border-style:solid;
+  border-width:1px;
+}
+
+div.__timelineWrap div.__element.__current {
+  border-color:#000;
+}                    
+
+input.__verticalSlider {
+  clear:none;
+  width:20px;
+}
+
+div.__verticalSliderKeyLabel:first-of-type {
+  bottom:5px;
+  float:none;
+  position:absolute;
+  right:3px;
+}
+
+div.__verticalSliderKeyLabel:last-of-type {
+  float:none;
+  position:absolute;
+  right:3px;
+  top:5px;
+}
+
+div.__video {
+	background:#ccc;
+	border:1px solid #999;
+	float:left;
+	margin:0 0 5px 0;
+	overflow:hidden;
+	padding:0;
+	position:relative;
+	-moz-user-select:none;
+	-webkit-user-select:none;
+}
+
+div.__video video {
+	left:0;
+	margin:0;
+	padding:0;
+	position:relative;
+	top:0;
+}
+
+div.__videoWidget {
+  float:left;
+  margin:0;
+  overflow:hidden;
+  padding:0;
+  position:relative;
+}
+
+div.__videoWidgetTop {
+  clear:both;
+  float:left;
+  margin:0 0 5px 0;
+  overflow:hidden;
+  padding:0;
+  position:relative;
+}
+
+div.__videoWidgetLeft {
+  float:left;
+  margin:0 5px 0 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  padding:0;                    
+  position:relative;
+}
+
+div.__videoWidgetCenter {
+  float:left;
+  margin:0 5px 0 0;
+  overflow:hidden;
+  padding:0;
+  position:relative;
+}
+
+div.__videoWidgetCenter div.__annotation {
+  margin:0 0 5px 0;
+}
+
+div.__videoWidgetCenterInfo {
+  clear:both;
+  float:left;
+  margin:0;
+  overflow:hidden;
+  padding:0;
+  position:relative;
+  width:100%;
+}
+
+div.__videoWidgetRight {
+  float:left;
+  margin:0;
+  overflow:hidden;
+  padding:0;
+  position:relative;
+}
+
+div.__videoWidgetRight div.__optionsWrap {
+  clear:both;
+  float:left;
+  margin:10px 0 0 5px;
+  padding:0; 
+  position:relative;
+}
+
+div.__videoWidgetBottom {
+  clear:both;
+  float:left;
+  margin:0;
+  overflow:hidden;
+  padding:0;
+  position:relative;
+}
