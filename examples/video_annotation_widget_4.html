@@ -1,0 +1,51 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Video Annotation Widget Example 4</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  var widget;
+  function load() {
+	// Creates a video annotation widget in div#content
+	widget = new VideoAnnotationWidget(document.getElementById('content'),
+		'http://greendotblade2.cs.nyu.edu/baseball/mp4/' + URL.get('video'), {
+			zoomable: true,	// Enables zoom controls on the video
+			advanced: true, // Enables advanced playback features (trace, stick figure, etc.)
+			trails: true, // Enables selectively enabling/disabling motion trails
+			markerStyle: 'playback', // Makes markers much smaller
+			markerSets: [
+				{name: 'HEAD', details: 'The center of the pitcher\'s head'},
+				{name: 'LSHO', details: 'The pitcher\'s left shoulder'},
+				{name: 'LELB', details: 'The pitcher\'s left elbow'},
+				{name: 'LHND', details: 'The center of the pitcher\'s left hand (the hand wearing the glove)'},
+				{name: 'LFWT', details: 'The left side of the pitcher\'s hip'},
+				{name: 'LKNE', details: 'The pitcher\'s left knee'},
+				{name: 'LANK', details: 'The pitcher\'s left ankle'},
+				{name: 'RFWT', details: 'The right side of the pitcher\'s hip'},
+				{name: 'RKNE', details: 'The pitcher\'s right knee'},
+				{name: 'RANK', details: 'The pitcher\'s right ankle'},
+				{name: 'RSHO', details: 'The pitcher\'s right shoulder'},
+				{name: 'RELB', details: 'The pitcher\'s right elbow'},
+				{name: 'RHND', details: 'The center of the pitcher\'s right hand (the throwing hand)'}
+			], // The names and details for the annotation tracks
+    });
+  }
+  function parse() {
+    widget.canvas.parse(document.getElementById('json').value);
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Video Annotation Widget Example 4</h2>
+</header>
+
+<section id="content"></section>
+<section style="clear:both; float:left;"><textarea style="float:left; clear:both;" id="json" cols="40" rows="5"></textarea><input style="float:left; clear:both;" type="button" onclick="parse()" value="Parse"></section>
+
+</body>
+
+</html>

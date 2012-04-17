@@ -1,0 +1,31 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Zoomable Image Example 1</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  function load() {
+	// Creates a new image in div#image
+	var image = new Image(document.getElementById('image'), 
+	  'http://greendotblade2.cs.nyu.edu/baseball/markers_reduced.jpg', {
+		scale: 0.7,		// Scales the image to 70% of its full size
+		zoomable: true	// Enables zooming
+	});
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Zoomable Image Example 1</h2>
+</header>
+
+<section id="content">
+	<div id="image"></div>
+</section>
+
+</body>
+
+</html>

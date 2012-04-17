@@ -1,0 +1,44 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Zoomable Video Example 3</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  function load() {
+	// Creates a video in div#video
+    var video = new Video(document.getElementById('video'),
+ 	  'http://greendotblade2.cs.nyu.edu/baseball/mp4_720/greinke_03.mp4', {
+		scale: 0.5,								// Scales the video to 50% of its actual resolution
+		zoomable: true,							// Enables zooming into the video
+		minZoom: 2,								// Sets the minimum zoom level to 2x
+		maxZoom: 4,								// Sets the maximum zoom level to 4x
+		mapDiv: document.getElementById('map')	// Places the reference video map in div#map
+	});
+	
+ 	// Adds a set of buttons to control video playback (play/pause, jump to end, etc.)
+	var videoButtons = new VideoInputSet(document.getElementById('buttons'), video);
+	
+	// Resizes the div#buttons to match the width of the video
+	EventHandler.addCustomListener(video, 'resized', function(e) {
+		document.getElementById('buttons').style.width = (video.getTotalWidth() + 2) + 'px';
+	});
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Zoomable Video Example 3</h2>
+</header>
+
+<section id="content">
+	<div id="video"></div>
+	<div id="buttons"></div>
+	<div id="map"></div>
+</section>
+
+</body>
+
+</html>

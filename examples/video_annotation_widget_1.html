@@ -1,0 +1,35 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Video Annotation Widget Example 1</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  var widget;
+  function load() {
+	// Creates a video annotation widget in div#content
+	widget = new VideoAnnotationWidget(document.getElementById('content'),
+		'http://greendotblade2.cs.nyu.edu/baseball/mp4/oswalt_02.mp4', {
+			zoomable: true,	// Enables zoom controls on the video
+			markerSets: [
+				{name: 'HEAD', details: 'The center of the pitcher\'s head'},
+				{name: 'LSHO', details: 'The pitcher\'s left shoulder'},
+				{name: 'LELB', details: 'The pitcher\'s left elbow'},
+				{name: 'LHND', details: 'The center of the pitcher\'s left hand (the hand wearing the glove)'}
+			], // The names and details for the annotation tracks
+    });
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Video Annotation Widget Example 1</h2>
+</header>
+
+<section id="content"></section>
+
+</body>
+
+</html>

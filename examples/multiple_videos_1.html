@@ -1,0 +1,40 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Multiple Videos Example 1</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  function load() {
+	// Creates a video in div#video
+    var video1 = new Video(document.getElementById('video'), 
+	  'http://greendotblade2.cs.nyu.edu/baseball/mp4_720/lewis_06.mp4', {
+		autoplay: true,		// Starts playing the video when the page loads
+		height: 250,		// Scales the video to have height 250px
+		label: 'A'			// Adds the label A below the video
+	});
+	
+	// Creates another video in div#video
+	var video2 = new Video(document.getElementById('video'),
+	  'http://greendotblade2.cs.nyu.edu/baseball/mp4_720/lewis_12.mp4', {
+		autoplay: true,		// Starts playing the video when the page loads
+		height: 250,		// Scales the video to have height 250px
+		label: 'B'			// Adds the label B below the video
+	});
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Multiple Videos Example 1</h2>
+</header>
+
+<section id="content">
+	<div id="video"></div>
+</section>
+
+</body>
+
+</html>

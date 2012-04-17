@@ -1,0 +1,48 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Multiple Images Example 1</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  function load() {
+	// Creates a new image in div#image
+	var image1 = new Image(document.getElementById('image'),
+	  'http://greendotblade2.cs.nyu.edu/baseball/markers_reduced.jpg', {
+		height: 280,	// Scales the image to have height 280px
+		label: '1',		// Sets the image label to '1'
+		padding: 10		// Adds 10px of padding around the image
+	});
+	
+	// Creates a new image in div#image
+	var image2 = new Image(document.getElementById('image'),
+	  'http://greendotblade2.cs.nyu.edu/baseball/carpenter_13.jpg', {
+		height: 280,	// Scales the image to have height 280px
+		label: '2',		// Sets the image label to '2'
+		padding: 10		// Adds 10px of padding around the image
+	});
+	
+	// Creates a new image in div#image
+	var image3 = new Image(document.getElementById('image'),
+	  'http://greendotblade2.cs.nyu.edu/baseball/silly2.jpg', {
+		height: 280,	// Scales the image to have height 280px
+		label: '3',		// Sets the image label to '3'
+		padding: 10		// Adds 10px of padding around the image
+	});
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Multiple Images Example 1</h2>
+</header>
+
+<section id="content">
+	<div id="image"></div>
+</section>
+
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Video Example 1</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  function load() {
+	// Creates a video in div#video
+    var video = new Video(document.getElementById('content'),
+	  'http://greendotblade2.cs.nyu.edu/baseball/mp4_720/fister_03.mp4', {
+		autoplay: true,	// Makes the video start playing when the page loads
+		scale: 0.5,		// Makes the video half its actual resolution
+		volume: 0.8		// Sets the volume of the video to 80%
+	});
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Video Example 1</h2>
+</header>
+
+<section id="content"></section>
+
+</body>
+
+</html>

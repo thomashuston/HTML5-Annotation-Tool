@@ -1,0 +1,33 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Image Example 1</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  function load() {
+	// Creates a new image in div#image
+	var image = new Image(document.getElementById('image'), 
+	  'http://greendotblade2.cs.nyu.edu/baseball/markers_reduced.jpg', {
+		width: 500,		// Sets the maximum width to 500
+		height: 500,	// Sets the maximum height to 500 (the image 
+						// will scale to fit in a 500x500 bounding box)
+		padding: 50 	// Adds 50px of padding around the image
+	});
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Image Example 1</h2>
+</header>
+
+<section id="content">
+	<div id="image"></div>
+</section>
+
+</body>
+
+</html>

@@ -1,0 +1,1474 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool Documentation</title>
+</head>
+
+<body>
+
+<header>
+  <h2>HTML5 Annotation Tool Documentation</h2>
+  <h4>Copyright (C) 2012 - Thomas Huston, Ian Spiro<br>Movement Lab, New York University</h4>
+</header>
+
+<section id="content">
+  <p>The HTML5 Annotation Tool (HAT) is a JavaScript/HTML5 toolkit for quickly and easily annotating images and videos in a web browser. With just a few options, you can create a full-featured widget for markerless motion capture, and all data can be exported as a JSON string for computations in other programs. The following documentation explains the options available.</p>
+  
+  <h3>Examples</h3>
+
+  <p>Below are examples of different classes and options available in HAT. Take a look at the source for each page; there is a script tag in the header with code and comments.</p>
+  <p><b>Videos</b></p>
+  <ul>
+  <li><a href="video_1.html">Video Example 1</a></li>
+  <li><a href="video_2.html">Video Example 2</a></li>
+  <li><a href="zoomable_video_1.html">Zoomable Video Example 1</a></li>
+  <li><a href="zoomable_video_2.html">Zoomable Video Example 2</a></li>
+  <li><a href="zoomable_video_3.html">Zoomable Video Example 3</a></li>
+  <li><a href="multiple_videos_1.html">Multiple Videos Example 1</a></li>
+  <li><a href="video_annotation_widget_1.html">Video Annotation Widget Example 1</a></li>
+  <li><a href="video_annotation_widget_2.html">Video Annotation Widget Example 2</a></li>
+  <li><a href="video_annotation_widget_3.html?video=http://greendotblade2.cs.nyu.edu/baseball/mp4/porcello_11.mp4&amp;zoomable=true&amp;markerSets=[{&quot;name&quot;:&quot;HEAD&quot;,&quot;details&quot;:&quot;The center of the pitcher's head&quot;},{&quot;name&quot;:&quot;LHND&quot;,&quot;details&quot;:&quot;The center of the pitcher's left hand (the hand with the glove)&quot;}]">Video Annotation Widget Example 3</a></li>
+  </ul>
+  <p><b>Images</b></p>
+  <ul>
+  <li><a href="image_1.html">Image Example 1</a></li>
+  <li><a href="zoomable_image_1.html">Zoomable Image Example 1</a></li>
+  <li><a href="multiple_images_1.html">Multiple Images Example 1</a></li>
+  <li><a href="image_annotation_widget_1.html">Image Annotation Widget Example 1</a></li>
+  </ul>
+
+
+  <h3>VideoAnnotationWidget</h3>
+  <p>A widget for annotating videos. Creates a Video, adds an AnnotationCanvas on top, creates a VideoScrubber, and adds a VideoInputSet and VideoAnnotationInputSet. Takes care of all HTML structuring and formatting necessary to create the widget. To create a new VideoAnnotationWidget, the user must provide the DOM element in which the widget will go, the path to the video file for annotation, and an object literal containing any options for the AnnotationCanvas and Video. See the AnnotationCanvas and Video documentation for more details about the available options.</p>
+<code>
+var widget = new VideoAnnotationWidget(
+  document.getElementById(`widgetDiv'),
+  `/path/to/video.mp4',
+  {
+    markerSets: [`HEAD', `LHND'],
+    autoplay: true,
+    scale: 50
+  }
+);
+</code>
+  
+  <h3>ImageAnnotationWidget</h3>
+  <p>A widget for annotating images. Creates an Image, adds an AnnotationCanvas on top, and creates an ImageAnnotationInputSet. Takes care of all HTML structuring and formatting necessary to create the widget. To create a new ImageAnnotationWidget, the user must provide the DOM element in which the widget will go, the path to the image file for annotation, and an object literal containing any options for the AnnotationCanvas and Image. See the AnnotationCanvas and Image documentation for more details about the available options.</p>
+<code>
+var widget = new VideoAnnotationWidget(
+  document.getElementById(`widgetDiv'),
+  `/path/to/image.jpg',
+  {
+    markerSets: [`HEAD', `LHND'],
+    width: 500,
+    zoomable: true
+  }
+);
+</code>
+  
+  <h3>EventHandler</h3>
+  <p>A special utility object for handling the custom events defined in the various HAT classes. Use this utility rather than regular JavaScript event handling methods. EventHandler is an object literal, so methods are simply called directly on it; there is no need to create an instance.</p>
+
+  <p><b>Methods</b></p>
+
+  <p><i>addCustomListener(element, type, handler, scope, once)</i> - Add a listener for a custom event fired by the specified element. Type is a string specifying the event type. Handler is the function to execute when the event is fired. Scope is the scope in which ``this'' applies for the handler. Defaults to the handler function. Once is an optional boolean specifying whether the listener should be automatically removed after the event is fired once. Used for load events where the action should not be called again after loading the first time.</p>
+
+<code>
+function frameAlert() {
+  alert(this.getCurrentFrame());
+}
+EventHandler.addCustomListener(
+  video,
+  `timeupdate',
+  frameAlert,
+  video
+);
+</code>
+
+  <p><i>removeCustomListener(element, type, handler)</i> - Removes a listener for a custom event fired by the specified element. Type is a string specifying the event type. Handler is the function to remove. Handler must be a reference to the exact same function used when adding the listener, not an anonymous function with the same body.</p>
+
+<code>
+EventHandler.removeCustomListener(
+  video,
+  `timeupdate',
+  frameAlert
+);
+</code>
+
+  <p><i>fire(element, type)</i> - Fires an event for the specified element. Type is a string specifying the event type. Should only be used inside classes created for HAT.</p>
+
+<code>
+EventHandler.fire(this, `timeupdate');
+</code>
+
+
+  <h3>URL</h3>
+  <p>A special utility class for parsing URL arguments. Can be used to retrieve one or all URL arguments, or to parse the arguments into an object literal that can be passed as options to one of the HAT classes. As URL is an object literal, there is no need to ever create an instance.</p>
+
+  <p><b>Methods</b></p>
+
+  <p><i>get(name)</i> - Returns the specified URL argument.</p>
+
+<code>
+var name = URL.get(`name');
+</code>
+
+  <p><i>getAll()</i> - Returns an object literal mapping all arguments to their values.</p>
+
+<code>
+var args = URL.getAll();
+</code>
+
+<p><i>parseOptions()</i> - Returns an object literal that decodes the URL arguments such that they will work as options for a HAT class.</p>
+
+<code>
+var options = URL.parseOptions();
+var video = new Video(
+  document.getElementById(`videoDiv'),
+  `/path/to/video.mp4',
+  options
+);
+</code>
+
+
+<h3>DisplayElement</h3>
+<p>DisplayElement is the parent of all classes producing the main visual output: Video, Image, and Canvas. All DisplayElements can be scaled, padded, labeled, and zoomed. When creating a DisplayElement, as detailed in the Video, Image and Canvas sections, options are passed in using an object literal:
+
+<code>
+var options = {
+  scale: 0.5,
+  padding: 25
+};
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>center</i> - (Array) An (x, y) pair specifying the center point around which the DisplayElement should be focused when initially loaded. The center point is only used for DisplayElements with zooming enabled and with a starting zoom level greater than 1.0. Defaults to the center of the DisplayElement.</p>
+
+<code>
+center: [360, 240]
+</code>
+
+<p><i>height</i> - (integer) The height of the DisplayElement in pixels. If no width is specified, the DisplayElement will be scaled to the exact height. If a width is given, the DisplayElement is scaled to fit within the bounding box formed by the specified height and width. Defaults to the natural height of the element unless a width or scale is provided.</p>
+
+<code>
+height: 350
+</code>
+
+<p><i>label</i> - (String) A name or label for the DisplayElement. Labels are displayed in bold text below the DisplayElement. No label is displayed by default.</p>
+
+<code>
+label: `Video 1'
+</code>
+
+<p><i>mapDiv</i> - (DOM Element) The DOM element in which to create the zoom navigation reference. Defaults to the same DOM element as the DisplayElement was created in. Ignored for DisplayElements with zooming disabled.</p>
+
+<code>
+mapDiv: document.getElementById(`mapDiv')
+</code>
+
+<p><i>mapScale</i> - (float) The factor by which the zoom navigation reference should be scaled relative to the DisplayElement. For example, a scale factor of 0.2 for a 640x360 Video would make the zoom reference 128x72. Defaults to 0.35. Ignored for DisplayElements with zooming disabled.</p>
+
+<code>
+mapScale: 0.35
+</code>
+
+<p><i>maxZoom</i> - (float) The maximum zoom factor. This specifies the maximum level the user may zoom in to. Defaults to 10.0. Ignored for DisplayElements with zooming disabled.</p>
+
+<code>
+maxZoom: 5.5
+</code>
+
+<p><i>minZoom</i> - (float) The minimum zoom factor. This specifies the minimum level the user may zoom out to. Defaults to 1.0. Ignored for DisplayElements with zooming disabled.</p>
+
+<code>
+minZoom: 2.0
+</code>
+
+<p><i>padding</i> - (integer) The amount of padding to provide around the DisplayElement (in pixels). Padding is applied evenly to all sides. Defaults to 0.</p>
+
+<code>
+padding: 15
+</code>
+
+<p><i>scale</i> - (float) The factor by which the element should be scaled relative to its full resolution. For example, a scale factor of 0.5 would resize a 1280x720 video to 640x360. Defaults to 1.0 unless a height or width is provided.</p>
+
+<code>
+scale: 0.75
+</code>
+
+<p><i>width</i> - (integer) The width of the DisplayElement in pixels. If no height is specified, the DisplayElement will be scaled to the exact width. If a height is given, the DisplayElement is scaled to fit within the bounding box formed by the specified height and width. Defaults to the natural width of the element unless a height or scale is provided.</p>
+
+<code>
+width: 600
+</code>
+
+<p><i>zoom</i> - (integer) The initial zoom factor. Specifies the zoom level that should be used when the DisplayElement first loads. Defaults to the minimum zoom level. Ignored for DisplayElements with zooming disabled.</p>
+
+<code>
+zoom: 3.65
+</code>
+
+<p><i>zoomable</i> - (boolean) Specifies whether zooming controls should be enabled on the DisplayElement. Zooming allows users to zoom in to an DisplayElement, which can be particularly useful when annotating hard-to-see points. All other zoom related options are ignored if zoomable is set to false.</p>
+
+<code>
+zoomable: true
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>getHeight()</i> - Returns the current height of the DisplayElement.</p>
+
+<code>
+var height = video.getHeight();
+</code>
+
+<p><i>getHTMLElement()</i> - Returns the DOM Element created (video, img or canvas).</p>
+
+<code>
+var img = image.getHTMLElement();
+</code>
+
+<p><i>getPadding()</i> - Returns the current padding size around the DisplayElement.</p>
+
+<code>
+var padding = canvas.getPadding();
+</code>
+
+<p><i>getRawHeight()</i> - Returns the height of the element according to its natural resolution.</p>
+
+<code>
+var height = video.getRawHeight();
+</code>
+
+<p><i>getRawWidth()</i> - Returns the width of the element according to its natural resolution.</p>
+
+<code>
+var width = image.getRawWidth();
+</code>
+
+<p><i>getScale()</i> - Returns the factor by which the element is scaled relative to its natural resolution.</p>
+
+<code>
+var scale = video.getScale();
+</code>
+
+<p><i>getTotalHeight()</i> - Gets the height of the DisplayElement including padding.</p>
+
+<code>
+var height = canvas.getTotalHeight();
+</code>
+
+<p><i>getTotalWidth()</i> - Gets the width of the DisplayElement including padding.</p>
+
+<code>
+var width = canvas.getTotalWidth();
+</code>
+
+<p><i>getWidth()</i> - Returns the current with of the DisplayElement.</p>
+
+<code>
+var width = image.getWidth();
+</code>
+
+<p><i>getZoomFactor()</i> - Gets the factor by which the DisplayElement is currently zoomed.</p>
+
+<code>
+var zoom = video.getZoomFactor();
+</code>
+
+<p><i>isLoaded()</i> - Checks if the DisplayElement is loaded.</p>
+
+<code>
+var loaded = video.isLoaded();
+</code>
+
+<p><i>setCenter(center)</i> - Centers the zoomed DisplayElement around the specified (x, y) coordinates.</p>
+
+<code>
+image.setCenter([250, 300]);
+</code>
+
+<p><i>setHeight(height)</i> - Sets the height of the DisplayElement.</p>
+
+<code>
+video.setHeight(250);
+</code>
+
+<p><i>setLabel(label)</i> - Sets the label for the DisplayElement.</p>
+
+<code>
+image.setLabel(`Image 1');
+</code>
+
+<p><i>setPadding(padding)</i> - Sets the padding around the DisplayElement.</p>
+
+<code>
+canvas.setPadding(20);
+</code>
+
+<p><i>setScale(scale, width, height)</i> - Scales the DisplayElement depending upon the parameters provided. If only a scale factor is provided, the DisplayElement is scaled relative to the element's natural resolution. If only width or height are provided, the DisplayElement is scaled to that exact dimension. If both width and height are provided, the DisplayElement is scaled to fit within the bounding box created by the specified height and width.</p>
+
+<code>
+video.setScale(0.5);
+image.setScale(1, 250, 300);
+</code>
+
+<p><i>setWidth(width)</i> - Sets the width of the DisplayElement.</p>
+
+<code>
+canvas.setWidth(500);
+</code>
+
+<p><i>setZoom(zoom)</i> - Sets the zoom factor for the DisplayElement.</p>
+
+<code>
+video.setZoom(3.5);
+</code>
+
+<p><b>Events</b></p>
+
+<p><i>created</i> - Fired when the DisplayElement is first created, but before the internal element has loaded.</p>
+
+<p><i>loaded</i> - Fired once the element loads.</p>
+
+<p><i>recentered</i> - Fired whenever a zoomed DisplayElement is recentered.</p>
+
+<p><i>resized</i> - Fired when the DisplayElement is resized.</p>
+
+<p><i>update</i> - A generic update event fired in conjunction with other, more specific events.</p>
+
+<p><i>zoomupdate</i> - Fired whenever the zoom level changes.</p>
+
+
+<h3>Canvas</h3>
+<p>Canvas is a wrapper around an HTML5 canvas. Standardizes canvas functionality for easier use. Subclass of DisplayElement. To create a new Canvas, the user must provide the DOM element in which the canvas will be created and an object literal of options, including a height and width.</p>
+
+<code>
+var canvas = new Canvas(
+  document.getElementById(`canvasDiv'),
+  { height: 300, width: 500 }
+);
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>source</i> - (DisplayElement) A Canvas may duplicate an existing DisplayElement. For example, by setting the source to a Video, the Canvas will draw the current frame of the Video as it plays.</p>
+
+<code>
+source: video
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>clear()</i> - Clears the contents of the canvas.</p>
+
+<code>
+canvas.clear();
+</code>
+
+<p><i>draw(function)</i> - Executes the function passed as a parameter to draw elements to the canvas. Inside the function, ``this'' refers to the Canvas instance.</p>
+
+<code>
+canvas.draw(function() {
+  var ctx = this.getContext();
+  ctx.fillStyle = 'red';
+  ctx.fillRect(0, 0, 250, 250);
+});
+</code>
+
+<p><i>getContext()</i> - Returns the canvas context.</p>
+
+<code>
+var ctx = canvas.getContext();
+</code>
+
+<p><i>setSource(source)</i> - Sets the source DisplayElement for the Canvas to duplicate.</p>
+
+<code>
+canvas.setSource(video);
+</code>
+
+
+<h3>Image</h3>
+<p>A wrapper class around images. The primary purpose of Image is to allow annotation and zooming of still images. Subclass of DisplayElement. To create a new Image, the user must provide the DOM element in which the img element will be created, the path to the image source file, and (optionally) an object literal of options.</p>
+
+<code>
+var image = new Image(
+  document.getElementById(`imageDiv'),
+  '/path/to/image.jpg',
+  { width: 600 }
+);
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>getSource()</i> - Returns the file path for the image source file.</p>
+
+<code>
+var imageFile = image.getSource();
+</code>
+
+
+<h3>Video</h3>
+<p>Video is a wrapper around HTML5 videos. Video handles the loading and playback of videos in the web browser, and allows customization through simple options. Subclass of DisplayElement. To create a new Video, the user must provide the DOM element in which the video element will be created, the path to the video source file, and (optionally) an object literal of options.</p>
+
+<code>
+var video = new Video(
+  document.getElementById('videoDiv'),
+  '/path/to/video.mp4',
+  { scale: 0.4, loop: false }
+);
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>autoplay</i> - (boolean) Specifies whether the video should automatically start playing once loaded. Defaults to false.</p>
+
+<code>
+autoplay: true
+</code>
+
+<p><i>frameRate</i> - (floating point) The frame rate of the video source file. Defaults to 29.97.</p>
+
+<code>
+frameRate: 24
+</code>
+
+<p><i>loop</i> - (boolean) Specifies whether the video should loop continuously on playback. Defaults to true.</p>
+
+<code>
+loop: false
+</code>
+
+<p><i>volume</i> - (floating point) A number from 0 to 1.0 specifying the volume of the audio. Defaults to 0 (muted).</p>
+
+<code>
+volume: 0.6
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>getCurrentFrame()</i> - Returns the number of the current frame of the video.</p>
+
+<code>
+var frame = video.getCurrentFrame();
+</code>
+
+<p><i>getCurrentTime()</i> - Returns the current time index of the video in seconds.</p>
+
+<code>
+var time = video.getCurrentTime();
+</code>
+
+<p><i>getFrameLength()</i> - Returns the total length of the video in frames.</p>
+
+<code>
+var frames = video.getFrameLength();
+</code>
+
+<p><i>getSource()</i> - Returns the file path of the video source file.</p>
+
+<code>
+var videoFile = video.getSource();
+</code>
+
+<p><i>getTimeLength()</i> - Returns the total length of the video in seconds (as a floating point).</p>
+
+<code>
+var seconds = video.getTimeLength();
+</code>
+
+<p><i>isEnded()</i> - Checks if the video has reached the end.</p>
+
+<code>
+if (video.isEnded()) {
+  // Do something
+}
+</code>
+
+<p><i>isPlayable()</i> - Checks if the video is ready to begin playing.</p>
+
+<code>
+if (video.isPlayable()) {
+  video.play();
+}
+</code>
+
+<p><i>isPaused()</i> - Checks if the video is currently paused.</p>
+
+<code>
+if (video.isPaused()) {
+  video.play();
+}
+</code>
+
+<p><i>play()</i> - Begins playing the video if it is playable.</p>
+
+<code>
+video.play();
+</code>
+
+<p><i>pause()</i> - Pauses video playback.</p>
+
+<code>
+video.pause();
+</code>
+
+<p><i>setFrame(frame)</i> - Pauses the video and jumps to the specified frame number.</p>
+
+<code>
+video.setFrame(16);
+</code>
+
+<p><i>setLoop(loop)</i> - Sets whether the video should loop on playback.</p>
+
+<code>
+video.setLoop(false);
+</code>
+
+<p><i>setTime(time)</i> - Pauses the video and jumps to the specified time index in seconds.</p>
+
+<code>
+video.setTime(3.54);
+</code>
+
+<p><i>setVolume(volume)</i> - Sets the audio to the specified volume level.</p>
+
+<code>
+video.setVolume(0.8);
+</code>
+
+<p><i>step(step)</i> - Pauses playback and steps the video the specified number of frames forward. Use a negative step to move backward.</p>
+
+<code>
+video.step(4);
+video.step(-3);
+</code>
+
+<p><b>Events</b></p>
+
+<p><i>loaded</i> - Fired when the video is ready to play.</p>
+
+<p><i>metadata</i> - Fired when metadata about the video is available, but it is not yet ready to play.</p>
+
+<p><i>play</i> - Fired whenever the video begins playing.</p>
+
+<p><i>pause</i> - Fired when the video is paused.</p>
+
+<p><i>timeupdate</i> - Fired every 25 ms during playback.</p>
+
+
+<h3>AnnotationCanvas</h3>
+<p>A specialized Canvas for annotating DisplayElements. When the user clicks on a point, a marker appears. Creates a set of ColorButtons for switching between markers. Displays the currently selected marker below the DisplayElement. Also includes timelines indicating keyframes placed when annotating a video. Subclass of DisplayElement and Canvas. To create a new AnnotationCanvas, the user must provide the DisplayElement that is being annotated, and an object literal containing options including the marker set names.</p>
+
+<code>
+var ac = new AnnotationCanvas(
+  video,
+  { markerSets: [`HEAD', `LELB'] }
+);
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>buttonDiv</i> - (DOM Element) The DOM element in which the marker buttons should be placed. Defaults to the same DOM element as the canvas.</p>
+
+<code>
+buttonDiv: document.getElementById('x')
+</code>
+
+<p><i>markerSets</i> - (Array) An array of the marker sets to use for annotation. Several types of arrays are supported. The user may simply provide an array of strings representing the names of the markers, and the default colors will be used. The user may also provide an array of object literals with the fields color, name, and/or details. Finally, the user may explicitly provide an array of MarkerSet instances. There is no default; the user must explicitly provide the marker set options.</p>
+
+<code>
+markerSets: [`HEAD', `RHND']
+markerSets: [{
+  name: `HEAD', 
+  color: `#0f3', 
+  details: `The bridge of the nose.'
+}]
+markerSets: [new MarkerSet({
+  name: `HEAD',
+  details: `The bridge of the nose.'
+})]
+</code>
+
+<p><i>markerStyle</i> - (String) The style of marker to use. The built-in options are `annotation' (a large circle with a plus symbol in the center, to be used when actively annotating) and `playback' (a smaller colored dot, to be used for playing back completed annotations). Defaults to `annotation'.</p>
+
+<code>
+markerStyle: `annotation'
+</code>
+
+<p><i>referenceDiv</i> - (DOM Element) The DOM element in which the details about the currently selected track should be placed. Defaults to the same DOM element as the canvas (right below it, specifically).</p>
+
+<code>
+referenceDiv: document.getElementById(`x')
+</code>
+
+<p><i>timelineDiv</i> - (DOM Element) The DOM element in which the annotation timelines should be created if a video is being annotated. Defaults to the same DOM element as the canvas (below the marker reference info).</p>
+
+<code>
+timelineDiv: document.getElementById(`x')
+</code>
+
+<p><i>trails</i> - (boolean) Specifies whether to include checkboxes that turn on/off motion trails for each annotation point. Defaults to false.</p>
+
+<code>
+trails: true
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>clearMarkers()</i> - Clears all markers for all tracks.</p>
+
+<code>
+ac.clearMarkers();
+</code>
+
+<p><i>getCurrentMarker()</i> - Returns the number of the current marker. For images, this will always return 0. For videos, this returns the current frame number.</p>
+
+<code>
+var markerIndex = ac.getCurrentMarker();
+</code>
+
+<p><i>getCurrentSet()</i> - Returns the currently selected MarkerSet.</p>
+
+<code>
+var markerSet = ac.getCurrentMarkerSet();
+</code>
+
+<p><i>parse(json)</i> - Parses the specified JSON string and loads the annotation data stored inside. Should only be used on strings generated by the stringify method.</p>
+
+<code>
+ac.parse(`{``HEAD'':[[0, 0, 0, 0]]');
+</code>
+
+<p><i>redo()</i> - Redo the previously undone annotation action.</p>
+
+<code>
+ac.redo();
+</code>
+
+<p><i>setConnect(connect)</i> - Draws black lines connecting the points specified in the two-dimensional array connect. There are three possible types of connection. Specifying the names of two markers will connect those two points directly. Specifying the names of three markers will draw a line from the first marker to the midpoint of the other two. Specifying four names will draw a line from the midpoint of the first two to the midpoint of the last two.</p>
+
+<code>
+ac.setConnect([
+  [`HEAD', `LSHO', `RSHO'], 
+  [`LSHO', `LELB']
+]);
+</code>
+
+<p><i>setTrails(trails)</i> - Shows the motion path for each of the specified markers.</p>
+
+<code>
+ac.setTrails([`HEAD', `RHND']);
+</code>
+
+<p><i>stringify()</i> - Converts the annotation data into a JSON string. Creates a mapping from the name of each marker to its corresponding annotation. See MarkerSet for details about the format of MarkerSet JSON strings.</p>
+
+<code>
+var json = ac.stringify();
+</code>
+
+<p><i>undo()</i> - Undo the previous annotation action.</p>
+
+<code>
+ac.undo();
+</code>
+
+<p><b>Events</b></p>
+
+<p><i>redo</i> - Fired whenever redo() is called.</p>
+
+<p><i>setupdate</i> - Fired when a different marker set is selected, a marker is placed, or a marker is moved.</p>
+
+<p><i>undo</i> - Fired whenever undo() is called.</p>
+
+
+<h3>Marker</h3>
+<p>A class for tracking the position and visibility of markers. Primarily used as elements of a MarkerSet, which is used for tracking points in an AnnotationCanvas. To create a new Marker, the user need only provide an object literal containing any options.</p>
+
+<code>
+var marker = new Marker();
+var marker = new Marker({
+  position: [250, 300] 
+});
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>position</i> - (Array) An (x, y) pair specifying the position of the marker. Defaults to (0, 0).</p>
+
+<code>
+position: [250, 300]
+</code>
+
+<p><i>userDefined</i> - (boolean) Specifies whether the marker position was determined by the user or by interpolation. Defaults to false.</p>
+
+<code>
+userDefined: true
+</code>
+
+<p><i>visible</i> - (boolean) Specifies whether the marker is visible. Used for annotations in which a marker can go completely off screen. Defaults to false.</p>
+
+<code>
+visible: true
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>clear()</i> - Clears all settings for the Marker and restores the default values specified above.</p>
+
+<code>
+marker.clear();
+</code>
+
+<p><i>getX()</i> - Returns the x-coordinate of the Marker.</p>
+
+<code>
+var x = marker.getX();
+</code>
+
+<p><i>getY()</i> - Returns the y-coordinate of the Makrer.</p>
+
+<code>
+var y = marker.getY();
+</code>
+
+<p><i>isUserDefined()</i> - Checks if the Marker position was user-defined or determined by interpolation.</p>
+
+<code>
+var isUser = marker.isUserDefined();
+</code>
+
+<p><i>isVisible()</i> - Checks if the Marker is currently visible.</p>
+
+<code>
+var isVisible = marker.isVisible();
+</code>
+
+<p><i>parse(json)</i> - Parses the specified JSON string and restores the Marker settings. See the stringify method for details on the format of the JSON string.</p>
+
+<code>
+marker.parse(`[25, 79, 1');
+</code>
+
+<p><i>setPosition(x, y)</i> - Sets the position of the Marker to the specified (x, y) point.</p>
+
+<code>
+marker.setPosition(250, 300);
+</code>
+
+<p><i>setUserDefined(userDefined)</i> - Sets whether the Marker position was user-defined.</p>
+
+<code>
+marker.setUserDefined(true);
+</code>
+
+<p><i>setVisible(visible)</i> - Sets whether the Marker is visible.</p>
+
+<code>
+marker.setVisible(true);
+</code>
+
+<p><i>stringify()</i> - Returns a JSON string representing the Marker. Creates an array containing the x- and y-coorindates followed by a boolean specifying whether the position was user-defined. If the Marker is not visible, the array is empty.</p>
+
+<code>
+marker.stringify();
+</code>
+
+
+<h3>MarkerSet</h3>
+<p>A wrapper around sets of Markers. Each set has a name, color, and details about the point being annotated. The user must only provide an object literal containing options for the set.</p>
+
+<code>
+var markerSet = new MarkerSet({
+  color: `red',
+  name: `LANK'
+});
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>color</i> - (String) The name or hex code of the color that should be associated with the set. Defaults to `\#fff'.</p>
+
+<code>
+color: `#f09'
+</code>
+
+<p><i>details</i> - (String) A longer description of the annotation point. Defaults to an empty string.</p>
+
+<code>
+details: `The bridge of the nose'
+</code>
+
+<p><i>name</i> - (String) A short name indicating the point being annotated. Defaults to an empty string.</p>
+
+<code>
+name: `HEAD'
+</code>
+
+<p><i>size</i> - (integer) The size of the set. Defaults to 0.</p>
+
+<code>
+size: 20
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>clear(start, end)</i> - Clears all markers in the specified range (inclusive). If no end is provided, only the exact marker specified will be cleared.</p>
+
+<code>
+markerSet.clear(10, 18); 
+markerSet.clear(7);
+</code>
+
+<p><i>disable()</i> - Disables the MarkerSet, preventing any changes to the markers.</p>
+
+<code>
+markerSet.disable();
+</code>
+
+<p><i>enable()</i> - Enables the MarkerSet.</p>
+
+<code>
+markerSet.enable();
+</code>
+
+<p><i>getColor()</i> - Returns the color of the set.</p>
+
+<code>
+var color = markerSet.getColor();
+</code>
+
+<p><i>getDetails()</i> - Returns the string of details about the annotation point.</p>
+
+<code>
+var details = markerSet.getDetails();
+</code>
+
+<p><i>getName()</i> - Gets the name of the set.</p>
+
+<code>
+var name = markerSet.getName();
+</code>
+
+<p><i>getMarker(marker)</i> - Returns the specified Marker.</p>
+
+<code>
+var marker = markerSet.getMarker(8);
+</code>
+
+<p><i>getNextUserDefined(frame)</i> - Returns the number of the next user-defined Marker beginning at and including the specified frame. Returns -1 if there is no next.</p>
+
+<code>
+var next = 
+  markerSet.getNextUserDefined(11);
+</code>
+
+<p><i>getPreviousUserDefined(frame)</i> - Returns the number of the previous user-defined Marker beginning at and including the specified frame. Returns -1 if there is no previous.</p>
+
+<code>
+var prev =
+  markerSet.getPreviousUserDefined(11);
+</code>
+
+<p><i>getSize()</i> - Returns the size of the set.</p>
+
+<code>
+var size = markerSet.getSize();
+</code>
+
+<p><i>isEnabled()</i> - Checks if the set is enabled.</p>
+
+<code>
+var enabled = markerSet.isEnabled();
+</code>
+
+<p><i>parse(json)</i> - Parses the specified JSON string and restores the marker data.</p>
+
+<code>
+markerSet.parse(
+  `[[0, 0, 0, 0], [1, 0, 2, 1]]'
+);
+</code>
+
+<p><i>setColor(color)</i> - Sets the color of the MarkerSet.</p>
+
+<code>
+markerSet.setColor(`red');
+</code>
+
+<p><i>setDetails(details)</i> - Sets the details for the annotation point.</p>
+
+<code>
+markerSet.setDetails(
+  `The bridge of the nose'
+);
+</code>
+
+<p><i>setName(name)</i> - Sets the name of the set.</p>
+
+<code>
+markerSet.setName(`HEAD');
+</code>
+
+<p><i>setSize(size)</i> - Sets the size of the set.</p>
+
+<code>
+markerSet.setSize(20);
+</code>
+
+<p><i>stringify()</i> - Returns a JSON string representing the annotation data in the set. Creates a two-dimensional array. Each inner array represents a single marker. The inner array contains its index, the Marker's x- and y-coordinate, and whether the Marker is user-defined.</p>
+
+<code>
+var json = markerSet.stringify();
+</code>
+
+<p><b>Events</b></p>
+
+<p><i>update</i> - Fired whenever any changes are made to the Markers in the set.</p>
+
+
+<h3>InputElement</h3>
+<p>The abstract superclass of all input types. Establishes the basic DOM structure for all inputs and implements basic functionality. The user should never create an InputElement, only one of its subtypes.</p>
+
+<p><b>Options</b></p>
+
+<p><i>action</i> - (function) A function to execute whenever the input is activated. Defaults to undefined.</p>
+
+<code>
+action: function() {  
+  this.play();
+}
+</code>
+
+<p><i>actionScope</i> - (scope) The scope to which the keyword ``this'' should apply in the action function. Defaults to the InputElement.</p>
+
+<code>
+actionScope: video
+</code>
+
+<p><i>key</i> - (String/integer) The key (as a string or its JavaScript char code) that should act as a shortcut for activating the input and calling the action. Defaults to undefined.</p>
+
+<code>
+key: `x'
+key: 32
+</code>
+
+<p><i>keyLabel</i> - (String) The label to show below the input specifying the keyboard shortcut. Useful when a char code must be used for the key (as with the space bar, for example). Defaults to the key character.</p>
+
+<code>
+keyLabel: `Space'
+</code>
+
+<p><i>name</i> - (String) The name of the input to be used in HTML forms. Defaults to an empty string.</p>
+
+<code>
+name: `visible'
+</code>
+
+<p><i>text</i> - (String) The text to display in or next to the input, specifying what it does or controls. Defaults to an empty string.</p>
+
+<code>
+text: `Play'
+</code>
+
+<p><i>tooltip</i> - (String) Specifies the text to display when the user hovers the mouse over the input. Defaults to the text.</p>
+
+<code>
+tooltip: `Play the video'
+</code>
+
+<p><i>value</i> - (String) The value of the input to be used in HTML forms. Defaults to undefined.</p>
+
+<code>
+value: `50'
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>disable()</i> - Disables the input. When disabled, the input cannot be activated.</p>
+
+<code>
+input.disable();
+</code>
+
+<p><i>enable()</i> - Enables the input.</p>
+
+<code>
+input.enable();
+</code>
+
+<p><i>insert(div)</i> - Inserts the input into the specified DOM element.</p>
+
+<code>
+var dest = document.getElementById(`x');
+input.insert(dest);
+</code>
+
+<p><i>isEnabled()</i> - Checks if the input is enabled.</p>
+
+<code>
+if (input.isEnabled()) {
+  // Do something
+}
+</code>
+
+<p><i>setAction(action, scope)</i> - Sets the function to be executed when the input is activated, as well as the scope of the keyword ``this'' in the function.</p>
+
+<code>
+input.setAction(function() {  
+  this.play();
+}, video);
+</code>
+
+<p><i>setKey(key, label)</i> - Sets the keyboard shortcut and shortcut label for the input. The key can be either a character or a key's JavaScript char code.</p>
+
+<code>
+input.setKey(`x');
+input.setKey(32, `Space');
+</code>
+
+<p><i>setName(name)</i> - Sets the name attribute of the input for HTML forms.</p>
+
+<code>
+input.setName(`score');
+</code>
+
+<p><i>setText(text)</i> - Sets the text to display in or next to the input.</p>
+
+<code>
+input.setText(`Play');
+</code>
+
+<p><i>setTooltip(tooltip)</i> - Sets the text that appears when the user hovers over the input.</p>
+
+<code>
+input.setTooltip(`Play the video');
+</code>
+
+<p><b>Events</b></p>
+
+<p><i>clicked</i> - Fired whenever the input is activated (by clicking on the input, or by using a keyboard shortcut).</p>
+
+<p><i>inserted</i> - Fired when the input is inserted into the DOM
+
+
+<h3>Button</h3>
+<p>An HTML button. Subclass of InputElement. All methods act according to the default functionality specified in InputElement. To create a new Button, the user must provide only an object literal containing any options.</p>
+
+<code>
+var button = new Button({
+  text: `Play',
+  key: 32,
+  keyLabel: `Space',
+  action: function() {
+    this.play();
+  },
+  actionScope: video
+});
+</code>
+
+
+<h3>Checkbox</h3>
+<p>An HTML checkbox. Subclass of InputElement. Can execute a distinct method when the box is checked and when it is unchecked. To create a new Checkbox, the user must provide only an object literal containing any options.</p>
+
+<code>
+var checkbox = new Checkbox({
+  text: `Hide Video',
+  action: [function() {
+    video.hide();
+  }, function() {
+    video.show();
+  }]
+});
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>action</i> - (function/Array) A function or pair of functions to execute when the checkbox is activated. Providing one function simply executes the same action when the checkbox is checked or unchecked. If two functions are provided, the first is executed when the checkbox is checked and the second is executed when it is unchecked. Defaults to undefined.</p>
+
+<code>
+action: [function() {
+  video.hide();
+}, function() {
+  video.show();
+}]
+</code>
+
+<p><i>actionScope</i> - (scope/Array) A scope or pair of scopes to which the keyword ``this'' should apply in the action functions. If one scope is provided, it is used for both actions. If two scopes are provided, the first applies to the checking action, and the second applies to the unchecking action.</p>
+
+<code>
+actionScope: [video, image]
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>clear()</i> - Unchecks the checkbox without activating any actions.</p>
+
+<code>
+checkbox.clear();
+</code>
+
+<p><i>parse(json)</i> - Parses the specified JSON string and restores the checkbox state (checked or uncheck).</p>
+
+<code>
+checkbox.parse(`{checked:true}');
+</code>
+
+<p><i>setAction(action, scope)</i> - Sets the function(s) to execute when the checkbox is activated. If one function is provided, it will be executed when the checkbox is checked or unchecked. If two functions are provided, the first is run when the checkbox is checked, and the other when it is unchecked. The scope specifies the scope in which the keyword ``this'' applies for the functions. If no scope is provided, the Checkbox is used as the scope. If one scope is provided, it is used for both functions. If two scopes are provided, the first is used for the checking action, and the second is used for the unchecking action.</p>
+
+<code>
+checkbox.setAction([function() {
+  this.hide();
+}, function() {
+  this.show();
+}], video);
+</code>
+
+<p><i>stringify()</i> - Converts the checkbox to a JSON string. Creates an object literal with one boolean (checked) specifying whether the checkbox is checked or unchecked.</p>
+
+<code>
+var json = checkbox.stringify();
+</code>
+
+
+<h3>ColorButton</h3>
+<p>A colored HTML div that acts as a button. Subclass of InputElement. Used primarly for the marker set buttons in AnnotationCanvas. All methods act according to the default functionality specified in InputElement. To create a new ColorButton, the user must provide only an object literal containing any options.</p>
+
+<code>
+var button = new ColorButton({
+  text: `Play',
+  color: `red',
+  key: 32,
+  keyLabel: `Space',
+  action: function() {
+    this.play();
+  },
+  actionScope: video
+});
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>color</i> - (String) The color of the button. Defaults to white.</p>
+
+<code>
+color: `red'
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>setColor(color)</i> - Sets the color of the button.</p>
+
+<code>
+button.setColor(`red');
+</code>
+
+
+<h3>RadioButton</h3>
+<p>An HTML radio button. Subclass of InputElement. All methods act according to the default functionality specified in InputElement. To link RadioButtons together, set multiple RadioButtons to have the same name attribute. To create a new RadioButton, the user must only provide an object literal containing any options.</p>
+
+<code>
+var button = new RadioButton({
+  text: `Yes',
+  name: `enable'
+});
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>clear()</i> - Deselects the RadioButton.</p>
+
+<code>
+button.clear();
+</code>
+
+<p><i>parse(json)</i> - Parses the specified JSON string and restores the state (selected or unselected).</p>
+
+<code>
+button.parse(`{checked:true}');
+</code>
+
+<p><i>stringify()</i> - Converts the RadioButton to a JSON string. Creates an object literal with one boolean (checked) specifying whether the button is selected or not.</p>
+
+<code>
+var json = button.stringify();
+</code>
+
+
+<h3>Slider</h3>
+<p>An HTML slider. Subclass of InputElement. Can execute a distinct method when the slider is increased or decreased. Two keyboard shortcuts must be provided, one to increase the slider and one to decrease it. To create a new Slider, the user must provide only an object literal containing any options.</p>
+
+<code>
+var slider = new Slider({
+  action: [function() {
+    // Do something when increasing
+  }, function() {
+    // Do something when decreasing
+  }],
+  key: [`+', `-']
+});
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>action</i> - (function/Array) A function or pair of functions to execute when the slider is activated. Providing one function simply executes the same action when the slider is increased or decreased. If two functions are provided, the first is executed when the slider is increased and the second is executed when it is decreased. Defaults to undefined.</p>
+
+<code>
+action: [function() {
+  video.hide();
+}, function() {
+  video.show();
+}]
+</code>
+
+<p><i>actionScope</i> - (scope/Array) A scope or pair of scopes to which the keyword ``this'' should apply in the action functions. If one scope is provided, it is used for both actions. If two scopes are provided, the first applies to the checking action, and the second applies to the unchecking action.</p>
+
+<code>
+actionScope: [video, image]
+</code>
+
+<p><i>change</i> - (floating point) The amount to adjust the slider value by when a keyboard shortcut is executed. Defaults to the same value as the step.</p>
+
+<code>
+change: 0.5
+</code>
+
+<p><i>max</i> - (floating point) The maximum value of the slider. Defaults to 10.0.</p>
+
+<code>
+max: 21.5
+</code>
+
+<p><i>min</i> - (floating point) The minimum value of the slider. Defaults to 0.</p>
+
+<code>
+min: 5.0
+</code>
+
+<p><i>step</i> - (floating point) The size of the intervals by which the value changes as the user slides. Defaults to 1.0.</p>
+
+<code>
+step: 0.8
+</code>
+
+<p><i>style</i> - (String) Specifies whether the slider is horizontal or vertical. Defaults to `horizontal'.</p>
+
+<code>
+style: `vertical'
+</code>
+
+<p><i>value</i> - (floating point) The default starting value for the slider. Defaults to 0.</p>
+
+<code>
+value: 11.3
+</code>
+
+<p><i>width</i> - (integer) The width of the slider in pixels. Defaults to 100.</p>
+
+<code>
+width: 600
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>clear()</i> - Sets the slider value back to the minimum without activating any actions.</p>
+
+<code>
+slider.clear();
+</code>
+
+<p><i>getMax()</i> - Returns the maximum value of the slider.</p>
+
+<code>
+var max = slider.getMax();
+</code>
+
+<p><i>getMin()</i> - Returns the minimum value of the slider.</p>
+
+<code>
+var min = slider.getMin();
+</code>
+
+<p><i>getValue()</i> - Returns the current value of the slider.</p>
+
+<code>
+var value = slider.getValue();
+</code>
+
+<p><i>isVertical()</i> - Checks if the slider is horizontal or vertical.</p>
+
+<code>
+var vertical = slider.isVertical();
+</code>
+
+<p><i>parse(json)</i> - Parses the specified JSON string and restores the slider value.</p>
+
+<code>
+slider.parse(`{value:10.0}');
+</code>
+
+<p><i>setAction(action, scope)</i> - Sets the function(s) to execute when the slider is activated. If one function is provided, it will be executed when the slider is increased or decreased. If two functions are provided, the first is run when the slider is increased, and the other when it is decreased. The scope specifies the scope in which the keyword ``this'' applies for the functions. If no scope is provided, the Slider is used as the scope. If one scope is provided, it is used for both functions. If two scopes are provided, the first is used for the checking action, and the second is used for the unchecking action.</p>
+
+<code>
+slider.setAction([function() {
+  this.hide();
+}, function() {
+  this.show();
+}], video);
+</code>
+
+<p><i>setKey(key, label)</i> - Sets the keyboard shortcuts for increasing and decreasing the slider. Both key and label should be arrays where the first element is for increasing and the second is for decreasing.</p>
+
+<code>
+slider.setKey([`+',`-']);
+</code>
+
+<p><i>setMax(max)</i> - Sets the maximum value of the slider.</p>
+
+<code>
+slider.setMax(20.5);
+</code>
+
+<p><i>setMin(min)</i> - Sets the minimum value of the slider.</p>
+
+<code>
+slider.setMin(5.1);
+</code>
+
+<p><i>setStep(step)</i> - Sets the step for the slider.</p>
+
+<code>
+slider.setStep(0.4);
+</code>
+
+<p><i>setValue(value)</i> - Sets the value of the slider.</p>
+
+<code>
+slider.setValue(5.9);
+</code>
+
+<p><i>setWidth(width)</i> - Sets the width of the slider.</p>
+
+<code>
+slider.setWidth(500);
+</code>
+
+<p><i>stringify()</i> - Returns a JSON representation of the slider. Creates an object literal with one element (value) containing the current value of the slider.</p>
+
+<code>
+var json = slider.stringify();
+</code>
+
+<p><b>Events</b></p>
+
+<p><i>decreased</i> - Fired whenever the slider value decreases.</p>
+
+<p><i>increased</i> - Fired whenever the slider value increases.</p>
+
+
+<h3>VideoScrubber</h3>
+<p>A special slider designed for scrubbing videos. Subclass of Slider and InputElement. To create a new VideoScrubber, the user must provide the DOM element in which the scrubber will be placed, the Video object that the scrubber controls, and an object literal containing any options.</p>
+
+<code>
+var scrubber = new Scrubber(
+  document.getElementById('scrubber'),
+  video
+);
+</code>
+
+
+<h3>InputSet</h3>
+<p>A wrapper around sets of InputElements. Used for nicely spacing and centering related sets of inputs. To create a new InputSet, the user must provide the DOM element in which the set will be placed, and an object literal containing any options.</p>
+
+<code>
+var set = new InputSet(
+  document.getElementById('inputs'),
+  { style: `vertical' }
+);
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>style</i> - (String) Specifies whether the set should be vertical or horizontal. Defaults to `horizontal'.</p>
+
+<code>
+style: `vertical'
+</code>
+
+<p><b>Methods</b></p>
+
+<p><i>addInput(input)</i> - Adds an input to the set. The input can be any type of InputElement.</p>
+
+<code>
+set.addInput(new Button({
+  text: `Play',
+  key: 32,
+  action: function() {
+    video.play();
+  }
+}));
+</code>
+
+<p><i>addSpacer()</i> - Adds extra spacing between two inputs.</p>
+
+<code>
+set.addSpacer();
+</code>
+
+<p><i>parse(json)</i> - Parses the specified JSON string and restores the state of the InputElements. 
+
+<code>
+set.parse(`[{checked:true}]`);
+</code>
+
+<p><i>stringify()</i> - Returns a JSON string representing all InputElements in the set. Creates an array containing the JSON for each individual input.</p>
+
+<code>
+var json = set.stringify();
+</code>
+
+
+<h3>VideoInputSet</h3>
+<p>A special InputSet for controlling video playback. Subclass of InputSet. Creates the following buttons: jump to start, back 5 frames, back 1 frame, play/pause, go to frame, forward 1 frame, forward 5 frames, jump to end. To create a new VideoInputSet, the user must provide the DOM element in which the set should be created, the video the buttons control, and an object literal containing any options.</p>
+
+<code>
+var videoSet = new VideoInputSet(
+  document.getElementById(`videoControl'),
+  video
+);
+</code>
+
+<p><b>Options</b></p>
+
+<p><i>mode</i> - (String) Specifies whether to include all buttons or only basic playback controls. Setting mode to `simple' will include only jump to start, play, and jump to end. Defualts to `full'.</p>
+
+
+<h3>VideoAnnotationInputSet</h3>
+<p>A special InputSet for annotating videos. Subclass of InputSet. Creates the following buttons: previous keyframe, next keyframe, nudge 1px left/right/up/down, delete keyframe, clear all keyframes, undo, redo. To create a new VideoAnnotationInputSet, the user must provide the DOM element in which the set will be created, the AnnotationCanvas the buttons control, and an object literal containing any options.</p>
+
+<code>
+var set = new VideoAnnotationInputSet(
+  document.getElementById(`set'),
+  annotationCanvas
+);
+</code>
+
+
+<h3>ImageAnnotationInputSet</h3>
+<p>A special InputSet for annotating images. Subclass of InputSet. Creates the following buttons: nudge 1px left/right/up/down, delete keyframe, clear all keyframes, undo, redo. To create a new ImageAnnotationInputSet, the user must provide the DOM element in which the set will be created, the AnnotationCanvas the buttons control, and an object literal containing any options.</p>
+
+<code>
+var set = new ImageAnnotationInputSet(
+  document.getElementById(`set'),
+  annotationCanvas
+);
+</code>
+
+
+</section>
+
+</body>
+
+</html>

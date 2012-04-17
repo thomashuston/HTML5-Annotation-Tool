@@ -1,0 +1,41 @@
+<html>
+
+<head>
+  <title>HTML5 Annotation Tool - Video Example 2</title>
+  <link rel="stylesheet" href="../hat.css" type="text/css"/>
+  <script type="text/javascript" src="../hat.js"></script>
+  <script type="text/javascript">
+  function load() {
+	// Creates a video in div#video
+    var video = new Video(document.getElementById('video'), 
+	  'http://greendotblade2.cs.nyu.edu/baseball/mp4_720/verlander_16.mp4', {
+		loop: false,	// Turns off looping on playback
+		padding: 25,	// Adds 25px of padding around the video
+		width: 500		// Scales the video so that it is 500px wide
+	});
+	
+ 	// Adds a set of buttons to control video playback (play/pause, jump to end, etc.)
+	var videoButtons = new VideoInputSet(document.getElementById('buttons'), video);
+	
+	// Resizes the div#buttons to match the width of the video
+	EventHandler.addCustomListener(video, 'resized', function(e) {
+		document.getElementById('buttons').style.width = (video.getTotalWidth() + 2) + 'px';
+	});
+  }
+  </script>
+</head>
+
+<body onload="load()">
+
+<header>
+  <h2>HTML5 Annotation Tool - Video Example 2</h2>
+</header>
+
+<section id="content">
+	<div id="video"></div>
+	<div id="buttons"></div>
+</section>
+
+</body>
+
+</html>
