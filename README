@@ -1,0 +1,5 @@
+The HTML5 Annotation Tool (HAT) is a JavaScript/HTML5 toolkit for quickly and easily annotating images and videos in a web browser. With just a few options, you can create a full-featured widget for markerless motion capture, and all data can be exported as a JSON string for computations in other programs. The following documentation explains the options available.
+
+See examples/index.html for documentation and links to example code.
+
+Copyright (C) 2012 - Thomas Huston, Ian Spiro<br>Movement Lab, New York University

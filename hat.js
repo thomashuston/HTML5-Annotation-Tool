@@ -1,7 +1,7 @@
 /**
  * HAT - The HTML5 Annotation Tool
  *
- * Copyright (C) 2011 - Thomas Huston, Ian Spiro
+ * Copyright (C) 2012 - Thomas Huston, Ian Spiro
  * Movement Lab, New York University
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,13 +22,15 @@
 // ############################## DECLARATIONS ##############################
 
 function AnnotationCanvas(){}  
-function AnnotationInputSet(){}
 function Button(){}
 function Canvas(){}
 function Checkbox(){}
+function ColorButton(){}
 function DisplayElement(){}
-function DivButton(){}
+function DisplaySet(){}
 function Image(){}
+function ImageAnnotationInputSet(){}
+function ImageAnnotationWidget(){}
 function InputElement(){}
 function InputSet(){}
 function Marker(){}
@@ -36,8 +38,10 @@ function MarkerSet(){}
 function RadioButton(){}
 function Slider(){}
 function Video(){}
+function VideoAnnotationInputSet(){}
 function VideoAnnotationWidget(){}
 function VideoInputSet(){}
+function VideoScrubber(){}
 function Zoomable(){}
 
 
@@ -332,6 +336,11 @@ function DisplayElement(div, options) {
   this.elementDiv.className = '__element';
   this.wrapDiv.appendChild(this.elementDiv);
   this.div.appendChild(this.wrapDiv);
+  
+  // Initialize variables
+  this.loaded = false;
+  this.rawHeight = 0;
+  this.rawWidth = 0;
 
   // Parse the options
   EventHandler.addCustomListener(this, 'created', function(e) {
@@ -343,18 +352,22 @@ function DisplayElement(div, options) {
     // Set the label
     if (options !== undefined && options.label !== undefined) {
       this.setLabel(options.label);
+    } else {
+      this.setLabel('');
     }
 
     // Set the padding
     if (options !== undefined && options.padding !== undefined) {
       this.setPadding(options.padding);
     } else {
-      this.setPadding(this.padding);
+      this.setPadding(0);
     }
 
     // Set the scale
     if (options !== undefined && options.scale !== undefined) {
       this.scale = parseFloat(options.scale);
+    } else {
+      this.scale = 1.0;
     }
 
     // Set the width
@@ -370,14 +383,6 @@ function DisplayElement(div, options) {
   }, this, true);
   
 }
-
-// Defaults
-DisplayElement.prototype.label = '';
-DisplayElement.prototype.loaded = false;
-DisplayElement.prototype.padding = 0;
-DisplayElement.prototype.rawHeight = 0;
-DisplayElement.prototype.rawWidth = 0;
-DisplayElement.prototype.scale = 1.0;
 
 /**
  * Gets the HTML element.
@@ -633,25 +638,29 @@ function Video(div, video, options) {
   // Set autoplay
   if (options !== undefined && options.autoplay !== undefined) {
     this.autoplay = (options.autoplay === true);
+  } else {
+    this.autoplay = false;
   }
 
   // Set the framerate
   if (options !== undefined && options.frameRate !== undefined) {
     this.frameRate = parseFloat(options.frameRate);
+  } else {
+    this.frameRate = 29.97;
   }
 
   // Set loop
   if (options !== undefined && options.loop !== undefined) {
     this.setLoop(options.loop);
   } else {
-    this.setLoop(this.loop);
+    this.setLoop(true);
   }
 
   // Set the volume
   if (options !== undefined && options.volume !== undefined) {
     this.setVolume(options.volume);
   } else {
-    this.setVolume(this.volume);
+    this.setVolume(0);
   }
 
   // Set the video source
@@ -663,14 +672,6 @@ function Video(div, video, options) {
 
 // Inherit methods from DisplayElement
 OOP.inherit(Video, DisplayElement);
-
-// Defaults
-Video.prototype.autoplay = false;
-Video.prototype.frameRate = 29.97;
-Video.prototype.loop = true;
-Video.prototype.playable = false;
-Video.prototype.scale = 1.0;
-Video.prototype.volume = 0;
 
 /**
  * Gets the current frame number.
@@ -1012,9 +1013,6 @@ function Canvas(div, options) {
 // Inherit methods from DisplayElement
 OOP.inherit(Canvas, DisplayElement);
 
-// Defaults
-Canvas.prototype.loaded = false;
-
 /**
  * Clears the canvas.
  */
@@ -1084,22 +1082,22 @@ function Marker(options) {
   // Parse options
   if (options !== undefined && options.position !== undefined) {
     this.setPosition(options.position[0], options.position[1]);
+  } else {
+    this.setPosition(0, 0);
   }
 
   if (options !== undefined && options.userDefined !== undefined) {
     this.setUserDefined(options.userDefined);
+  } else {
+    this.setUserDefined(false);
   }
 
   if (options !== undefined && options.visible !== undefined) {
     this.setVisible(options.visible);
+  } else {
+    this.setVisible(false);
   }
 }
-
-// Defaults
-Marker.prototype.userDefined = false;
-Marker.prototype.visible = false;
-Marker.prototype.x = 0;
-Marker.prototype.y = 0;
 
 /**
  * Clears the marker.
@@ -1219,30 +1217,33 @@ Marker.prototype.stringify = function() {
  * @param options An object containing custom options for the marker set.
  */
 function MarkerSet(options) {
+  // Initialize variables
+  this.enabled= true;
+  this.markers = [];
+  
   // Parse options
   if (options !== undefined && options.color !== undefined) {
     this.setColor(options.color);
+  } else {
+    this.setColor('#fff');
   }
 
   if (options !== undefined && options.details !== undefined) {
     this.setDetails(options.details);
+  } else {
+    this.setDetails('');
   }
 
   if (options !== undefined && options.name !== undefined) {
     this.setName(options.name);
+  } else {
+    this.setName('');
   }
 
   if (options !== undefined && options.size !== undefined) {
     this.setSize(options.size);
   }
 }
-
-// Defaults
-MarkerSet.prototype.color = '#fff';
-MarkerSet.prototype.details = '';
-MarkerSet.prototype.enabled = true;
-MarkerSet.prototype.name = '';
-MarkerSet.prototype.markers = [];
 
 /**
  * Deletes user defined markers in the specified range.
@@ -1598,7 +1599,16 @@ function AnnotationCanvas(element, options) {
   if (!(element instanceof DisplayElement)) {
     throw new Error('You may only create a tracking canvas for a display element.');
   }
+  
+  // Initialize variables
   this.annotation = element;
+  this.markerSets = [];
+  this.connect = [];
+  this.currentMarker = -1;
+  this.currentSet = -1;
+  this.redoStack = [];
+  this.trails = [];
+  this.undoStack = [];
 
   // Create a new wrapper div
   this.annotationDiv = document.createElement('div');
@@ -1655,6 +1665,8 @@ function AnnotationCanvas(element, options) {
 
     if (options.markerStyle !== undefined) {
       this.markerStyle = options.markerStyle;
+    } else {
+      this.markerStyle = 'annotation';
     }
 
     if (this.markerStyle === 'annotation') {
@@ -1681,18 +1693,24 @@ function AnnotationCanvas(element, options) {
       };
     }
     var __this = this;
-    function generateDisable(i) {
-      return function() {
-        if (this.checkbox.checked === true) {
-          __this.markerSets[i].enable();
-        } else {
-          __this.markerSets[i].disable();
-        }
-      };
-    }
     function generateCheck(checkbox) {
       return function() {
         checkbox.checkbox.checked = this.isEnabled();
+      };
+    }
+    function generateTrails(i) {
+      return function() {
+        var checkboxes = document.getElementsByClassName('__trail');
+        var trails = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+          if (checkboxes[i].checked === true) {
+            trails.push(checkboxes[i].value);
+            checkboxes[i].title = 'Turn off motion trail for ' + this.markerSets[i].getName();
+          } else {
+            checkboxes[i].title = 'Turn on motion trail for ' + this.markerSets[i].getName();
+          }
+        }
+        this.setTrails(trails);
       };
     }
     var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
@@ -1706,21 +1724,24 @@ function AnnotationCanvas(element, options) {
       if (i < keys.length) {
         buttonOptions.key = keys[i];
       }
-      var button = new DivButton(buttonOptions);
+      var button = new ColorButton(buttonOptions);
       button.setAction(generateAction(i), this);
       this.markerButtons.addInput(button);
-      if (options.checkbox !== undefined && options.checkbox === true) {
+      if (options.trails !== undefined && options.trails === true) {
         var checkbox = new Checkbox({
-          float: 'right'
+          float: 'right',
+          action: generateTrails(i),
+          actionScope: this
         });
-        checkbox.setAction(generateDisable(i), checkbox);
         var markerButton = this.markerButtons.inputSet.lastChild.firstChild;
         this.markerButtons.inputSet.lastChild.removeChild(markerButton);
         checkbox.insert(this.markerButtons.inputSet.lastChild);
         checkbox.checkbox.style.marginBottom = '2px';
         checkbox.inputWrap.style.marginRight = '0';
         checkbox.inputWrap.style.paddingRight = '2px';
-        checkbox.checkbox.checked = true;
+        checkbox.checkbox.className += ' __trail';
+        checkbox.checkbox.title = 'Turn on motion trail for ' + this.markerSets[i].getName();
+        checkbox.checkbox.value = this.markerSets[i].getName();
         EventHandler.addCustomListener(this.markerSets[i], 'enabled', generateCheck(checkbox), this.markerSets[i]);
         EventHandler.addCustomListener(this.markerSets[i], 'disabled', generateCheck(checkbox), this.markerSets[i]);
         this.markerButtons.inputSet.lastChild.appendChild(markerButton);
@@ -1771,10 +1792,10 @@ function AnnotationCanvas(element, options) {
           var ctx = this.getContext();
           ctx.fillStyle = markerSet.getColor();
           if (!markerSet.isEnabled()) {
-            timeline.elementDiv.style.background = '#eee';
+            timeline.elementDiv.style.background = '#fff';
             ctx.globalAlpha = 0.4;
           } else {
-            timeline.elementDiv.style.background = '#ddd';
+            timeline.elementDiv.style.background = '#eee';
             ctx.globalAlpha = 1.0;
           }
           ctx.beginPath();
@@ -1925,14 +1946,13 @@ function AnnotationCanvas(element, options) {
 
     // Add a border around the current marker set timeline
     function updateTimeline() {
-      var found = document.getElementsByClassName('__element __canvas __current');
-      for (var i = 0; i < found.length; i++) {
-        found[i].className = '__element __canvas';
+      for (var i = 0; i < this.timelines.length; i++) {
+        if (i === this.currentSet && this.markerSets[i].isEnabled()) {
+          this.timelines[i].getHTMLElement().parentNode.className = '__element __canvas __current';
+        } else {
+          this.timelines[i].getHTMLElement().parentNode.className = '__element __canvas';
+        }
       }
-      if (this.currentSet < 0 || !this.markerSets[this.currentSet].isEnabled()) {
-        return;
-      }
-      this.timelines[this.currentSet].getHTMLElement().parentNode.className += ' __current';
     }
 
     // Create the timelines
@@ -2077,22 +2097,16 @@ function AnnotationCanvas(element, options) {
   EventHandler.addCustomListener(this, 'update', draw, this);
   EventHandler.addCustomListener(this.annotation, 'zoomupdate', draw, this);
 }
+ 
+
 
 // Inherit methods from Canvas
 OOP.inherit(AnnotationCanvas, Canvas);
 
 // Defaults
-AnnotationCanvas.prototype.connect = [];
-AnnotationCanvas.prototype.currentMarker = -1;
-AnnotationCanvas.prototype.currentSet = -1;
 AnnotationCanvas.prototype.defaultColors = ['#00f','#06f','#09f','#0ff','#099',
                                           '#0f9','#0f0','#ff0','#f60','#f00',
                                           '#f06','#f0f','#f9f'];
-AnnotationCanvas.prototype.markerSets = [];
-AnnotationCanvas.prototype.markerStyle = 'annotation';
-AnnotationCanvas.prototype.redoStack = [];
-AnnotationCanvas.prototype.trails = [];
-AnnotationCanvas.prototype.undoStack = [];
 
 /**
  * Adds a marker set to the tracking canvas.
@@ -2585,11 +2599,6 @@ AnnotationCanvas.prototype.undo = function() {
 function Zoomable() {
 }
 
-// Defaults
-Zoomable.prototype.mapScale = 0.35;
-Zoomable.prototype.maxZoom = 8;
-Zoomable.prototype.minZoom = 1;
-
 /**
  * Zooms and centers the source according to the center coordinates
  * and zoom factor.
@@ -2748,6 +2757,8 @@ Zoomable.prototype.initZoom = function(options) {
 
   if (options !== undefined && options.mapScale !== undefined) {
     this.mapScale = parseFloat(options.mapScale);
+  } else {
+    this.mapScale = 0.35;
   }
 
   if (options !== undefined && options.center !== undefined) {
@@ -2756,10 +2767,14 @@ Zoomable.prototype.initZoom = function(options) {
 
   if (options !== undefined && options.maxZoom !== undefined) {
     this.setMaxZoom(options.maxZoom);
+  } else {
+    this.setMaxZoom(8);
   }
 
   if (options !== undefined && options.minZoom !== undefined) {
     this.setMinZoom(options.minZoom);
+  } else {
+    this.setMinZoom(1);
   }
 
   if (options !== undefined && options.zoom !== undefined) {
@@ -2776,7 +2791,11 @@ Zoomable.prototype.initZoom = function(options) {
     this.mapWrap = document.createElement('div');
     this.mapWrap.className = '__mapWrap';
     this.mapOuterWrap.appendChild(this.mapWrap);
-    this.mapDiv.insertBefore(this.mapOuterWrap, this.mapDiv.firstChild);
+    if (this.mapDiv === this.div) {
+      this.mapDiv.appendChild(this.mapOuterWrap);
+    } else { 
+      this.mapDiv.insertBefore(this.mapOuterWrap, this.mapDiv.firstChild);
+    }
 
     // Create the reference object
     var options = {
@@ -3116,6 +3135,24 @@ function InputElement() {
 InputElement.prototype.clear = function() {};
 
 /**
+ * Inserts the input into the specified container.
+ *
+ * @param div The div in which to insert the input.
+ */
+InputElement.prototype.insert = function(div) {
+  // Insert the button into the div
+  div.appendChild(this.inputWrap);
+  // If there's a label, center the button accordingly
+  if (this.keyLabel !== undefined) {
+   setTimeout((function(scope) {
+     return function() {
+       scope.resize();
+     };
+   })(this), 100);
+  }
+};
+
+/**
  * Empty parse method for parsing a JSON string;
  * should be overridden in the subclass if relelvant.
  *
@@ -3159,6 +3196,36 @@ InputElement.prototype.parseOptions = function(options) {
   } else if (options.text !== undefined) {
     this.setTooltip(options.text);
   }
+};
+
+/**
+ * Empty method for parsing JSON strings;
+ * should be overridden in the subclass if relelvant.
+ *
+ * @param json The JSON string to parse.
+ */
+InputElement.prototype.parse = function(json) {
+  return;
+};
+
+/**
+ * Sets the action of the input.
+ *
+ * @param action The action.
+ */
+InputElement.prototype.setAction = function(action, scope) {
+  if (scope === undefined) {
+    scope = this;
+  }
+  var __this = this;
+  function click(action) {
+    return function(e) {
+      if (__this.isEnabled()) {
+        action.apply(scope, [e]);
+      }
+    };
+  }
+  EventHandler.addCustomListener(this, 'clicked', click(action), scope);
 };
 
 /**
@@ -3225,24 +3292,6 @@ Button.prototype.isEnabled = function() {
 };
 
 /**
- * Inserts the button into the specified container.
- *
- * @param div The div in which to insert the button.
- */
-Button.prototype.insert = function(div) {
-  // Insert the button into the div
-  div.appendChild(this.inputWrap);
-  // If there's a label, center the button accordingly
-  if (this.keyLabel !== undefined) {
-    setTimeout((function(scope) {
-      return function() {
-        scope.resize();
-      };
-    })(this), 100);
-  }
-};
-
-/**
  * Resizes the wrapper to center the button and label correctly.
  */
 Button.prototype.resize = function() {
@@ -3256,26 +3305,6 @@ Button.prototype.resize = function() {
     this.keyLabel.style.marginLeft = Math.round((buttonWidth-labelWidth)/2) + 'px';
   }
   EventHandler.fire(this, 'inserted');
-};
-
-/**
- * Sets the action of the button.
- *
- * @param action The action.
- */
-Button.prototype.setAction = function(action, scope) {
-  if (scope === undefined) {
-    scope = this;
-  }
-  var __this = this;
-  function click(action) {
-    return function(e) {
-      if (__this.isEnabled()) {
-        action.apply(scope, [e]);
-      }
-    };
-  }
-  EventHandler.addCustomListener(this, 'clicked', click(action), scope);
 };
 
 /**
@@ -3367,6 +3396,8 @@ function Checkbox(options) {
   // Parse options
   if (options !== undefined && options.float !== undefined) {
     this.float = options.float;
+  } else {
+    this.float = 'left';
   }
 
   this.parseOptions(options);
@@ -3383,9 +3414,6 @@ function Checkbox(options) {
 
 // Inherit methods from InputElement
 OOP.inherit(Checkbox, InputElement);
-
-// Defaults
-Checkbox.prototype.float = 'left';
 
 /**
  * Unchecks the checkbox.
@@ -3416,24 +3444,6 @@ Checkbox.prototype.enable = function() {
  */
 Checkbox.prototype.isEnabled = function() {
   return this.checkbox.disabled === false;
-};
-
-/**
- * Inserts the checkbox into the specified container.
- *
- * @param div The div in which to insert the checkbox.
- */
-Checkbox.prototype.insert = function(div) {
-  // Insert the checkbox into the div
-  div.appendChild(this.inputWrap);
-  // If there's a label, center the checkbox accordingly
-  if (this.keyLabel !== undefined) {
-    setTimeout((function(scope) {
-      return function() {
-        scope.resize();
-      };
-    })(this), 100);
-  }
 };
 
 /**
@@ -3583,9 +3593,12 @@ Checkbox.prototype.stringify = function() {
  *
  * @param options An object containing options for the div button.
  */
-function DivButton(options) {
+function ColorButton(options) {
   // Call the super constructor
   InputElement.call(this);
+  
+  // Initialize values
+  this.enabled = true;
 
   // Create the button
   this.button = document.createElement('div');
@@ -3595,6 +3608,8 @@ function DivButton(options) {
   // Parse options
   if (options !== undefined && options.float !== undefined) {
     this.float = options.float;
+  } else {
+    this.float = 'left';
   }
 
   if (options !== undefined && options.color !== undefined) {
@@ -3615,23 +3630,19 @@ function DivButton(options) {
 }
 
 // Inherit methods from InputElement
-OOP.inherit(DivButton, InputElement);
-
-// Defaults
-DivButton.prototype.enabled = true;
-DivButton.prototype.float = 'left';
+OOP.inherit(ColorButton, InputElement);
 
 /**
  * Disables the button.
  */
-DivButton.prototype.disable = function() {
+ColorButton.prototype.disable = function() {
   this.enabled = false;
 };
 
 /**
  * Enables the button.
  */
-DivButton.prototype.enable = function() {
+ColorButton.prototype.enable = function() {
   this.enabled = true;
 };
 
@@ -3641,32 +3652,14 @@ DivButton.prototype.enable = function() {
  * @return True if the button is enabled;
  * false otherwise.
  */
-DivButton.prototype.isEnabled = function() {
+ColorButton.prototype.isEnabled = function() {
   return this.enabled === true;
-};
-
-/**
- * Inserts the button into the specified container.
- *
- * @param div The div in which to insert the button.
- */
-DivButton.prototype.insert = function(div) {
-  // Insert the button into the div
-  div.appendChild(this.inputWrap);
-  // If there's a label, center the button accordingly
-  if (this.keyLabel !== undefined) {
-    setTimeout((function(scope) {
-      return function() {
-        scope.resize();
-      };
-    })(this), 100);
-  }
 };
 
 /**
  * Resizes the wrapper to center the button and label correctly.
  */
-DivButton.prototype.resize = function() {
+ColorButton.prototype.resize = function() {
   var buttonWidth = this.button.offsetWidth;
   var labelWidth = this.keyLabel.offsetWidth;
   var buttonMargin = '0';
@@ -3687,23 +3680,12 @@ DivButton.prototype.resize = function() {
 };
 
 /**
- * Sets the action of the button.
+ * Sets the color of the button.
  *
- * @param action The action.
+ * @param color The color.
  */
-DivButton.prototype.setAction = function(action, scope) {
-  if (scope === undefined) {
-    scope = this;
-  }
-  var __this = this;
-  function click(action) {
-    return function(e) {
-      if (__this.isEnabled()) {
-        action.apply(scope, [e]);
-      }
-    };
-  }
-  EventHandler.addCustomListener(this, 'clicked', click(action), scope);
+ColorButton.prototype.setColor = function(color) {
+  this.button.style.background = color;
 };
 
 /**
@@ -3712,7 +3694,7 @@ DivButton.prototype.setAction = function(action, scope) {
  * @param key The shortcut.
  * @param label The label for the shortcut.
  */
-DivButton.prototype.setKey = function(key, label) {
+ColorButton.prototype.setKey = function(key, label) {
   // If the key pressed matches the keyboard shortcut, fire clicked
   function keyAction(e) {
     if (document.activeElement !== document.body) {
@@ -3750,7 +3732,7 @@ DivButton.prototype.setKey = function(key, label) {
  *
  * @param name The name.
  */
-DivButton.prototype.setName = function(name) {
+ColorButton.prototype.setName = function(name) {
   this.button.name = name;
 };
 
@@ -3759,7 +3741,7 @@ DivButton.prototype.setName = function(name) {
  *
  * @param text The text.
  */
-DivButton.prototype.setText = function(text) {
+ColorButton.prototype.setText = function(text) {
   this.text = document.createElement('div');
   this.text.className = '__divButtonText';
   this.text.style.float = this.float;
@@ -3775,7 +3757,7 @@ DivButton.prototype.setText = function(text) {
  *
  * @param tooltip The tooltip text.
  */
-DivButton.prototype.setTooltip = function(tooltip) {
+ColorButton.prototype.setTooltip = function(tooltip) {
   this.button.title = tooltip;
 };
 
@@ -3838,24 +3820,6 @@ RadioButton.prototype.enable = function() {
  */
 RadioButton.prototype.isEnabled = function() {
   return this.radio.disabled === false;
-};
-
-/**
- * Inserts the radio button into the specified container.
- *
- * @param div The div in which to insert the radio button.
- */
-RadioButton.prototype.insert = function(div) {
-  // Insert the radio button into the div
-  div.appendChild(this.inputWrap);
-  // If there's a label, center the radio button accordingly
-  if (this.keyLabel !== undefined) {
-    setTimeout((function(scope) {
-      return function() {
-        scope.resize();
-      };
-    })(this), 100);
-  }
 };
 
 /**
@@ -4009,19 +3973,19 @@ function Slider(options) {
   if (options !== undefined && options.max !== undefined) {
     this.setMax(options.max);
   } else {
-    this.setMax(this.max);
+    this.setMax(10);
   }
 
   if (options !== undefined && options.min !== undefined) {
     this.setMin(options.min);
   } else {
-    this.setMin(this.min);
+    this.setMin(0);
   }
 
   if (options !== undefined && options.step !== undefined) {
     this.setStep(options.step);
   } else {
-    this.setStep(this.step);
+    this.setStep(1);
   }
 
   if (options !== undefined && options.change !== undefined) {
@@ -4063,11 +4027,6 @@ function Slider(options) {
 
 // Inherit methods from InputElement
 OOP.inherit(Slider, InputElement);
-
-// Defaults
-Slider.prototype.max = 10;
-Slider.prototype.min = 0;
-Slider.prototype.step = 1;
 
 /**
  * Sets the value to the minimum.
@@ -4115,24 +4074,6 @@ Slider.prototype.getMin = function() {
  */
 Slider.prototype.getValue = function() {
   return this.slider.value;
-};
-
-/**
- * Inserts the slider into the specified container.
- *
- * @param div The div in which to insert the slider.
- */
-Slider.prototype.insert = function(div) {
-  // Insert the slider into the div
-  div.appendChild(this.inputWrap);
-  // If there's a label, center the slider accordingly
-  if (this.keyLabel !== undefined) {
-    setTimeout((function(scope) {
-      return function() {
-        scope.resize();
-      };
-    })(this), 100);
-  }
 };
 
 /**
@@ -4404,6 +4345,41 @@ Slider.prototype.stringify = function() {
 };
 
 
+/**
+ * A special slider designed for scrubbing videos.
+ *
+ * @param div The div in which the scrubber will be placed.
+ * @param video The video the scrubber should control.
+ * @param options An object containing any custom options for the scrubber.
+ */
+function VideoScrubber(div, video, options) {
+  this.div = div;
+  this.video = video;
+  function create() {
+    this.scrubber = new Slider({
+      min: 0,
+      max: this.video.getFrameLength(),
+      width: this.video.getTotalWidth() + 2,
+      action: function() {
+        video.setFrame(this.getValue());
+      }
+    });
+    EventHandler.addCustomListener(this.video, 'timeupdate', function(e) {
+      this.scrubber.setValue(this.video.getCurrentFrame());
+    }, this);
+    this.scrubber.inputWrap.style.clear = 'both';
+    this.scrubber.inputWrap.style.margin = '0 0 4px 0';
+    this.scrubber.inputWrap.style.padding = '2px 0';
+    this.scrubber.insert(this.div);
+  }
+  if (this.video.isLoaded()) {
+    create.apply(this);
+  } else {
+    EventHandler.addCustomListener(this.video, 'loaded', create, this, true);
+  }
+}
+
+
 
 
 // ############################## INPUT SETS ##############################
@@ -4425,10 +4401,14 @@ function InputSet(div, options) {
   // Parse options
   if (options !== undefined && options.float !== undefined) {
     this.float = options.float;
+  } else {
+    this.float = 'left';
   }
 
   if (options !== undefined && options.style !== undefined) {
     this.style = options.style;
+  } else {
+    this.style = 'horizontal';
   }
 
   // Create the input set div
@@ -4455,10 +4435,6 @@ function InputSet(div, options) {
   this.inputs = [];
   
 }
-
-// Defaults
-InputSet.prototype.float = 'left';
-InputSet.prototype.style = 'horizontal';
 
 /**
  * Adds an input to the set.
@@ -4689,25 +4665,25 @@ VideoInputSet.prototype.create = function(mode) {
 
 
 /**
- * An input set for controlling annotation.
+ * An input set for controlling video annotation.
  *
  * @param div The div in which to insert the input set.
  * @param annotation The annotation canvas to control.
  * @param options An object containing options for the input set.
  */
-function AnnotationInputSet(div, annotation, options) {
+function VideoAnnotationInputSet(div, annotation, options) {
   InputSet.call(this, div, options);
   this.annotation = annotation;
   this.create();
 }
 
 // Inherit methods from InputSet
-OOP.inherit(AnnotationInputSet, InputSet);
+OOP.inherit(VideoAnnotationInputSet, InputSet);
 
 /**
  * Creates the annotation inputs.
  */
-AnnotationInputSet.prototype.create = function() {
+VideoAnnotationInputSet.prototype.create = function() {
   this.addInput(new Button({
     text: 'K<',
     key: 'e',
@@ -4747,7 +4723,205 @@ AnnotationInputSet.prototype.create = function() {
     actionScope: this
   }));
   this.addSpacer();
-  var test = this.addInput(new Button({
+  this.addInput(new Button({
+    text: '&larr;K',
+    key: 'h',
+    tooltip: 'Nudge Left 1px',
+    action: function() {
+      var markerSet = this.annotation.getCurrentSet();
+      if (markerSet === undefined || !markerSet.isEnabled()) {
+        return;
+      }
+      var marker = markerSet.getMarker(this.annotation.getCurrentMarker());
+      if (!marker.isVisible()) {
+        return;
+      }
+      var undo = {};
+      undo[this.annotation.currentSet] = markerSet.stringify();
+      this.annotation.pushUndo(undo);
+      marker.setPosition(marker.getX() - 1, marker.getY(), false);
+      marker.setUserDefined(true);
+      marker.fire();
+    },
+    actionScope: this
+  }));
+  this.addInput(new Button({
+    text: '&darr;K',
+    key: 'j',
+    tooltip: 'Nudge Down 1px',
+    action: function() {
+      var markerSet = this.annotation.getCurrentSet();
+      if (markerSet === undefined || !markerSet.isEnabled()) {
+        return;
+      }
+      var marker = markerSet.getMarker(this.annotation.getCurrentMarker());
+      if (!marker.isVisible()) {
+        return;
+      }
+      var undo = {};
+      undo[this.annotation.currentSet] = markerSet.stringify();
+      this.annotation.pushUndo(undo);
+      marker.setPosition(marker.getX(), marker.getY() + 1, false);
+      marker.setUserDefined(true);
+      marker.fire();
+    },
+    actionScope: this
+  }));
+  this.addInput(new Button({
+    text: 'K&uarr;',
+    key: 'k',
+    tooltip: 'Nudge Up 1px',
+    action: function() {
+      var markerSet = this.annotation.getCurrentSet();
+      if (markerSet === undefined || !markerSet.isEnabled()) {
+        return;
+      }
+      var marker = markerSet.getMarker(this.annotation.getCurrentMarker());
+      if (!marker.isVisible()) {
+        return;
+      }
+      var undo = {};
+      undo[this.annotation.currentSet] = markerSet.stringify();
+      this.annotation.pushUndo(undo);
+      marker.setPosition(marker.getX(), marker.getY() - 1, false);
+      marker.setUserDefined(true);
+      marker.fire();
+    },
+    actionScope: this
+  }));
+  this.addInput(new Button({
+    text: 'K&rarr;',
+    key: 'l',
+    tooltip: 'Nudge Right 1px',
+    action: function() {
+      var markerSet = this.annotation.getCurrentSet();
+      if (markerSet === undefined || !markerSet.isEnabled()) {
+        return;
+      }
+      var marker = markerSet.getMarker(this.annotation.getCurrentMarker());
+      if (!marker.isVisible()) {
+        return;
+      }
+      var undo = {};
+      undo[this.annotation.currentSet] = markerSet.stringify();
+      this.annotation.pushUndo(undo);
+      marker.setPosition(marker.getX() + 1, marker.getY(), false);
+      marker.setUserDefined(true);
+      marker.fire();
+    },
+    actionScope: this
+  }));
+  this.addSpacer();
+  var del = this.addInput(new Button({
+    text: 'Delete',
+    key: 'x',
+    tooltip: 'Delete Keyframe',
+    action: function() {
+      var markerSet = this.annotation.getCurrentSet();
+      if (markerSet === undefined || !markerSet.isEnabled()) {
+        return;
+      }
+      var undo = {};
+      undo[this.annotation.currentSet] = markerSet.stringify();
+      this.annotation.pushUndo(undo);
+      markerSet.clear(this.annotation.getCurrentMarker());
+    },
+    actionScope: this
+  }));
+  function updateDelete(e) {
+    var markerSet = this.annotation.getCurrentSet();
+    if (markerSet === undefined || !markerSet.isEnabled() || this.annotation.getCurrentMarker() < 0) {
+      return;
+    }
+    var marker = markerSet.getMarker(this.annotation.getCurrentMarker());
+    if (marker.isUserDefined()) {
+      del.enable();
+    } else {
+      del.disable();
+    }
+  }
+  updateDelete.apply(this);
+  EventHandler.addCustomListener(this.annotation, 'update', updateDelete, this);
+  EventHandler.addCustomListener(this.annotation, 'setupdate', updateDelete, this);
+  this.addInput(new Button({
+    text: 'Clear',
+    key: 'c',
+    tooltip: 'Clear Keyframes',
+    action: function() {
+      if (confirm('Are you sure you want to clear all keyframes?')) {
+        var undo = {};
+        for (var i = 0; i < this.annotation.markerSets.length; i++) {
+          undo[i] = this.annotation.markerSets[i].stringify();
+        }
+        this.annotation.pushUndo(undo);
+        this.annotation.clearMarkers();
+        this.annotation.setCurrentSet(0);
+        if (this.annotation.annotation instanceof Video) {
+          this.annotation.annotation.setFrame(0);
+        }
+      }
+    },
+    actionScope: this
+  }));
+  this.addSpacer();
+  var undo = this.addInput(new Button({
+    text: 'Undo',
+    key: 'z',
+    tooltip: 'Undo',
+    action: function() {
+      this.annotation.undo();
+    },
+    actionScope: this
+  }));
+  undo.disable();
+  EventHandler.addCustomListener(this.annotation, 'undo', function(e) {
+    if (this.annotation.undoStack.length < 1) {
+      undo.disable();
+    } else {
+      undo.enable();
+    }
+  }, this);
+  var redo = this.addInput(new Button({
+    text: 'Redo',
+    key: 'Z',
+    tooltip: 'Redo',
+    action: function() {
+      this.annotation.redo();
+    },
+    actionScope: this
+  }));
+  redo.disable();
+  EventHandler.addCustomListener(this.annotation, 'redo', function(e) {
+    if (this.annotation.redoStack.length < 1) {
+      redo.disable();
+    } else {
+      redo.enable();
+    }
+  }, this);
+};
+
+
+/**
+ * An input set for controlling image annotation.
+ *
+ * @param div The div in which to insert the input set.
+ * @param annotation The annotation canvas to control.
+ * @param options An object containing options for the input set.
+ */
+function ImageAnnotationInputSet(div, annotation, options) {
+  InputSet.call(this, div, options);
+  this.annotation = annotation;
+  this.create();
+}
+
+// Inherit methods from InputSet
+OOP.inherit(ImageAnnotationInputSet, InputSet);
+
+/**
+ * Creates the annotation inputs.
+ */
+ImageAnnotationInputSet.prototype.create = function() {
+  this.addInput(new Button({
     text: '&larr;K',
     key: 'h',
     tooltip: 'Nudge Left 1px',
@@ -4988,26 +5162,12 @@ function VideoAnnotationWidget(div, video, options) {
       buttonDiv: this.left,
       referenceDiv: this.centerInfo,
       timelineDiv: this.center,
-      checkbox: options.checkbox,
+      trails: options.trails,
       markerStyle: options.markerStyle
     });
 
     // Create the scrubber
-    this.scrubber = new Slider({
-      min: 0,
-      max: this.video.getFrameLength(),
-      width: this.video.getTotalWidth() + 2,
-      action: function() {
-        video.setFrame(this.getValue());
-      }
-    });
-    EventHandler.addCustomListener(this.video, 'timeupdate', function(e) {
-      this.scrubber.setValue(this.video.getCurrentFrame());
-    }, this);
-    this.scrubber.inputWrap.style.clear = 'both';
-    this.scrubber.inputWrap.style.margin = '0 0 4px 0';
-    this.scrubber.inputWrap.style.padding = '2px 0';
-    this.scrubber.insert(this.center);
+    this.scrubber = new VideoScrubber(this.center, this.video);
 
     // Parse JSON
     if (options.json !== undefined) {
@@ -5018,7 +5178,10 @@ function VideoAnnotationWidget(div, video, options) {
     this.playbackButtons = new VideoInputSet(this.center, this.video);
 
     // Create the annotation buttons
-    this.annotationButtons = new AnnotationInputSet(this.center, this.canvas);
+    this.annotationButtons = new VideoAnnotationInputSet(this.center, this.canvas);
+    this.annotationButtons.inputSetOuterWrap.style.clear = 'both';
+    this.annotationButtons.inputSetOuterWrap.style.float = 'left';
+    this.annotationButtons.inputSetOuterWrap.style.width = (this.video.getTotalWidth() + 2) + 'px';
 
     // Add additional checkboxes
     if (options.advanced === true) {
@@ -5064,13 +5227,117 @@ function VideoAnnotationWidget(div, video, options) {
         }],
         actionScope: this
       }));
+    }
+  }, this, true);
+}
+
+
+/**
+ * A widget for annotating images.
+ *
+ * @param div The div in which the widget will be placed.
+ * @param video The path to the image source file.
+ * @param options An object containing options for the widget.
+ */
+function ImageAnnotationWidget(div, image, options) {
+  // Set the destination div
+  this.div = div;
+
+  // Create the div structure
+  this.widget = document.createElement('div');
+  this.widget.className = '__videoWidget';
+  this.div.appendChild(this.widget);
+  this.top = document.createElement('div');
+  this.top.className = '__videoWidgetTop';
+  this.widget.appendChild(this.top);
+  this.left = document.createElement('div');
+  this.left.className = '__videoWidgetLeft';
+  this.top.appendChild(this.left);
+  this.center = document.createElement('div');
+  this.center.className = '__videoWidgetCenter';
+  this.top.appendChild(this.center);
+  this.right = document.createElement('div');
+  this.right.className = '__videoWidgetRight';
+  this.top.appendChild(this.right);
+  this.bottom = document.createElement('div');
+  this.bottom.className = '__videoWidgetBottom';
+  this.widget.appendChild(this.bottom);
+
+  // Create the video
+  options.mapDiv = this.right;
+  this.image = new Image(this.center, image, options);
+
+  EventHandler.addCustomListener(this.image, 'loaded', function(e) {
+    var image = this.image;
+
+    // Create the timecode
+    this.centerInfo = document.createElement('div');
+    this.centerInfo.className = '__videoWidgetCenterInfo';
+    this.centerInfo.style.width = (this.image.getTotalWidth() + 2) +'px';
+    this.center.appendChild(this.centerInfo);
+
+    // Create the annotation canvas
+    this.canvas = new AnnotationCanvas(this.image, {
+      markerSets: options.markerSets,
+      buttonDiv: this.left,
+      referenceDiv: this.centerInfo,
+      trails: options.trails,
+      markerStyle: options.markerStyle
+    });
+
+    // Parse JSON
+    if (options.json !== undefined) {
+      this.canvas.parse(options.json);
+    }
+
+    // Create the annotation buttons
+    this.annotationButtons = new ImageAnnotationInputSet(this.center, this.canvas);
+    this.annotationButtons.inputSetOuterWrap.style.clear = 'both';
+    this.annotationButtons.inputSetOuterWrap.style.float = 'left';
+    this.annotationButtons.inputSetOuterWrap.style.marginTop = '5px';
+    this.annotationButtons.inputSetOuterWrap.style.width = (this.image.getTotalWidth() + 2) + 'px';
+
+    // Add additional checkboxes
+    if (options.advanced === true) {
+      this.optionsWrap = document.createElement('div');
+      this.optionsWrap.className = '__optionsWrap';
+      this.right.appendChild(this.optionsWrap);
+      this.options = new InputSet(this.optionsWrap, {
+        style: 'vertical'
+      });
       this.options.addInput(new Checkbox({
-        text: 'Show Motion Trails',
-        key: 'i',
+        text: 'Hide Image',
+        key: 'y',
         action: [function() {
-          this.canvas.setTrails(['RHND', 'LANK']);
+          this.image.getHTMLElement().style.display = 'none';
+          this.image.getHTMLElement().parentNode.style.background = '#fff';
         }, function() {
-          this.canvas.setTrails([]);
+          this.image.getHTMLElement().style.removeProperty('display');
+          this.image.getHTMLElement().parentNode.style.removeProperty('background');
+        }],
+        actionScope: this
+      }));
+      this.options.addInput(new Checkbox({
+        text: 'Show Stick Figure',
+        key: 'u',
+        action: [function() {
+          this.canvas.setConnect([
+              ['HEAD', 'LSHO', 'RSHO'],
+              ['LSHO', 'RSHO'],
+              ['LSHO', 'LELB'],
+              ['LELB', 'LHND'],
+              ['RSHO', 'RELB'],
+              ['RELB', 'RHND'],
+              ['LSHO', 'LFWT'],
+              ['RSHO', 'RFWT'],
+              ['LFWT', 'RFWT'],
+              ['LFWT', 'LKNE'],
+              ['LKNE', 'LANK'],
+              ['RFWT', 'RKNE'],
+              ['RKNE', 'RANK']
+            ]);
+        }, function() {
+          this.canvas.setConnect([]);
         }],
         actionScope: this
       }));
